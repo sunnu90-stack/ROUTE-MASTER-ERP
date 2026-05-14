@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "318775788354",
+    "project_id": "liquid-logistics",
+    "storage_bucket": "liquid-logistics.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:318775788354:android:15f8010b397e848b753edb",
+        "android_client_info": {
+          "package_name": "com.example.liquid_logistics"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtszVk23oPXOOIncyXhkApLWiPkwaEt4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:318775788354:android:f6e648516534605e753edb",
+        "android_client_info": {
+          "package_name": "com.liquid_logistics"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtszVk23oPXOOIncyXhkApLWiPkwaEt4g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

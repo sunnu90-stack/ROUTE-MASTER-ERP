@@ -1,0 +1,1 @@
+(Get-Content lib/main.dart) -replace 'const Color(0xFF0F172A)', 'const Color(0xFF0A1628)' | Set-Content lib/main.dart
