@@ -30,7 +30,7 @@ class AppConfig {
 // ==========================================
 // ENUMS
 // ==========================================
-enum UserRole { visitor, verified, admin, developer }
+enum UserRole { visitor, verified, owner, driver, admin, developer }
 
 enum BidStatus { pending, dispatched }
 
@@ -573,6 +573,7 @@ class UserProfile {
       bankAccount,
       bankIfsc,
       panNumber;
+  UserRole role;
   UserProfile({
     this.companyName = "Sandhu Logistics",
     this.gstin = "Unregistered",
@@ -583,6 +584,7 @@ class UserProfile {
     this.bankAccount = "",
     this.bankIfsc = "",
     this.panNumber = "",
+    this.role = UserRole.owner,
   });
   Map<String, dynamic> toJson() => {
         'companyName': companyName,
@@ -594,6 +596,7 @@ class UserProfile {
         'bankAccount': bankAccount,
         'bankIfsc': bankIfsc,
         'panNumber': panNumber,
+        'role': role.index,
       };
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
         companyName: json['companyName'] ?? "",
@@ -605,7 +608,12 @@ class UserProfile {
         bankAccount: json['bankAccount'] ?? "",
         bankIfsc: json['bankIfsc'] ?? "",
         panNumber: json['panNumber'] ?? "",
+        role: json.containsKey('role')
+            ? UserRole.values[(json['role'] as int)]
+            : UserRole.owner,
       );
+
+  Null get pan => null;
 }
 
 class DriverTx {
@@ -2632,10 +2640,10 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                               color: l.partyPending <= 0
-                                  ? Colors.black.withOpacity(0.1)
+                                  ? Colors.black.withValues(alpha: 0.1)
                                   : l.isPaymentOverdue
-                                      ? Colors.black.withOpacity(0.1)
-                                      : Colors.black.withOpacity(0.1),
+                                      ? Colors.black.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8)),
                           child: Text(
                               l.partyPending <= 0
@@ -2724,7 +2732,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: const Color(0xFF212121))),
+                              color: Color(0xFF212121))),
                     ]),
                 if (l.paymentDueDate != null) ...[
                   const SizedBox(height: 10),
@@ -2760,7 +2768,8 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             color: Colors.black,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)
+              BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05), blurRadius: 20)
             ]),
         child: child,
       );
@@ -3021,7 +3030,7 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                   style: const TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 11,
-                      color: const Color(0xFF212121),
+                      color: Color(0xFF212121),
                       height: 1.5)),
             ),
           )),
@@ -3145,7 +3154,7 @@ class _BankImportScreenState extends State<BankImportScreen> {
               onPressed: _applyAllMatched,
               child: Text("Apply $matched",
                   style: const TextStyle(
-                      color: const Color(0xFF212121), fontWeight: FontWeight.bold)),
+                      color: Color(0xFF212121), fontWeight: FontWeight.bold)),
             ),
         ],
       ),
@@ -3235,8 +3244,7 @@ class _BankImportScreenState extends State<BankImportScreen> {
                             borderRadius: BorderRadius.circular(12)),
                         child: Text(
                             "Expected CSV format:\nDate, Narration, Ref No, Debit, Credit\n\nThe system auto-matches credit entries to party names in your ledger.",
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey),
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
                             textAlign: TextAlign.center),
                       ),
                     ]))
@@ -3502,7 +3510,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                   fontSize: 13)),
                           Text("₹${_fmt(e.value)}",
                               style: const TextStyle(
-                                  color: const Color(0xFF212121),
+                                  color: Color(0xFF212121),
                                   fontWeight: FontWeight.w900)),
                         ]),
                   )),
@@ -3527,7 +3535,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                               children: [
                                 Text("₹${_fmt(e.value)}",
                                     style: const TextStyle(
-                                        color: const Color(0xFF212121),
+                                        color: Color(0xFF212121),
                                         fontWeight: FontWeight.w900)),
                                 const Text("revenue",
                                     style: TextStyle(
@@ -3555,7 +3563,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                             color: const Color(0xFFFFF8E1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: Colors.black.withOpacity(0.3))),
+                                color: Colors.black.withValues(alpha: 0.3))),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -3572,13 +3580,13 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                          color:
-                                              app.statusColor.withOpacity(0.15),
+                                          color: app.statusColor
+                                              .withValues(alpha: 0.15),
                                           borderRadius:
                                               BorderRadius.circular(8),
                                           border: Border.all(
                                               color: app.statusColor
-                                                  .withOpacity(0.4))),
+                                                  .withValues(alpha: 0.4))),
                                       child: Text(app.statusLabel,
                                           style: TextStyle(
                                               color: app.statusColor,
@@ -3590,8 +3598,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                               Text(
                                   "Requested: ₹${_fmt(app.requestedAmount)} | Applied: ${app.appliedDate}",
                                   style: const TextStyle(
-                                      color: const Color(0x99000000),
-                                      fontSize: 12)),
+                                      color: Color(0x99000000), fontSize: 12)),
                               const SizedBox(height: 10),
                               Row(children: [
                                 Expanded(
@@ -3656,7 +3663,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                             color: const Color(0xFFFFF8E1),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                                color: Colors.black.withOpacity(0.3))),
+                                color: Colors.black.withValues(alpha: 0.3))),
                         child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -3674,7 +3681,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                   ]),
                               Text("₹${_fmt(l.partyPending)}",
                                   style: const TextStyle(
-                                      color: const Color(0xFF212121),
+                                      color: Color(0xFF212121),
                                       fontWeight: FontWeight.w900,
                                       fontSize: 16)),
                             ]),
@@ -3764,17 +3771,16 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     backgroundColor: const Color(0xFFFFF8E1),
                     title: const Text("⚠️ Factory Reset",
                         style: TextStyle(
-                            color: const Color(0xFF212121),
+                            color: Color(0xFF212121),
                             fontWeight: FontWeight.bold)),
                     content: const Text(
                         "This will erase ALL trips, drivers, fleet, and settings. This is irreversible.",
-                        style: TextStyle(color: const Color(0xB3000000))),
+                        style: TextStyle(color: Color(0xB3000000))),
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.pop(c),
                           child: const Text("Cancel",
-                              style: TextStyle(
-                                  color: const Color(0x99000000)))),
+                              style: TextStyle(color: Color(0x99000000)))),
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black),
@@ -3825,7 +3831,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     tileColor: isCurrent
-                        ? const Color(0xFF212121).withOpacity(0.15)
+                        ? const Color(0xFF212121).withValues(alpha: 0.15)
                         : const Color(0xFFFFF8E1),
                     title: Text(names[tier.index],
                         style: const TextStyle(
@@ -3833,7 +3839,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     trailing: isCurrent
                         ? const Text("ACTIVE",
                             style: TextStyle(
-                                color: const Color(0xFF212121),
+                                color: Color(0xFF212121),
                                 fontWeight: FontWeight.w900,
                                 fontSize: 11))
                         : TextButton(
@@ -3848,7 +3854,8 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                   behavior: SnackBarBehavior.floating));
                             },
                             child: Text("Set ${names[tier.index]}",
-                                style: TextStyle(color: const Color(0xFF212121)))),
+                                style:
+                                    TextStyle(color: const Color(0xFF212121)))),
                   ),
                 );
               }),
@@ -3887,7 +3894,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
 
   Widget _sectionTitle(String title) => Text(title,
       style: const TextStyle(
-          color: const Color(0xB3000000),
+          color: Color(0xB3000000),
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2));
@@ -3898,7 +3905,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
         decoration: BoxDecoration(
             color: const Color(0xFFFFF8E1),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: c.withOpacity(0.25))),
+            border: Border.all(color: c.withValues(alpha: 0.25))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(icon, color: c, size: 20),
           const SizedBox(height: 8),
@@ -3925,12 +3932,12 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
           decoration: BoxDecoration(
               color: const Color(0xFFFFF8E1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: c.withOpacity(0.2))),
+              border: Border.all(color: c.withValues(alpha: 0.2))),
           child: Row(children: [
             Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                    color: c.withOpacity(0.15),
+                    color: c.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10)),
                 child: Icon(icon, color: c, size: 20)),
             const SizedBox(width: 14),
@@ -3961,8 +3968,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
         child:
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text(label,
-              style: const TextStyle(
-                  color: const Color(0x99000000), fontSize: 12)),
+              style: const TextStyle(color: Color(0x99000000), fontSize: 12)),
           Text(value,
               style: const TextStyle(
                   color: Colors.black,
@@ -3973,7 +3979,9 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
 }
 
 extension on Color {
-  Color? operator [](int other) {}
+  Color? operator [](int other) {
+    return null;
+  }
 }
 
 // ==========================================
@@ -4245,7 +4253,7 @@ class _KredXScreenState extends State<KredXScreen>
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 10)
                         ]),
                     child: Column(
@@ -4346,7 +4354,7 @@ class _KredXScreenState extends State<KredXScreen>
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 10)
                         ]),
                     child: Column(
@@ -4372,12 +4380,12 @@ class _KredXScreenState extends State<KredXScreen>
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                        color:
-                                            app.statusColor.withOpacity(0.12),
+                                        color: app.statusColor
+                                            .withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(10),
                                         border: Border.all(
                                             color: app.statusColor
-                                                .withOpacity(0.4))),
+                                                .withValues(alpha: 0.4))),
                                     child: Text(app.statusLabel,
                                         style: TextStyle(
                                             color: app.statusColor,
@@ -4523,9 +4531,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
               margin: const EdgeInsets.only(right: 14),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black.withOpacity(0.5))),
+                  border:
+                      Border.all(color: Colors.black.withValues(alpha: 0.5))),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 AnimatedBuilder(
                     animation: _pulse,
@@ -4534,7 +4543,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                         height: 8,
                         decoration: BoxDecoration(
                             color: Colors.black
-                                .withOpacity(0.5 + _pulse.value * 0.5),
+                                .withValues(alpha: 0.5 + _pulse.value * 0.5),
                             shape: BoxShape.circle))),
                 const SizedBox(width: 6),
                 const Text("LIVE",
@@ -4579,8 +4588,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                   borderRadius: BorderRadius.circular(2),
                                   boxShadow: [
                                     BoxShadow(
-                                        color:
-                                            const Color(0xFF212121).withOpacity(0.5),
+                                        color: const Color(0xFF212121)
+                                            .withValues(alpha: 0.5),
                                         blurRadius: 8)
                                   ]))))),
               const Positioned(
@@ -4614,8 +4623,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                      color: const Color(0xFF212121).withOpacity(
-                                          0.4 + _pulse.value * 0.4),
+                                      color: const Color(0xFF212121).withValues(
+                                          alpha: 0.4 + _pulse.value * 0.4),
                                       blurRadius: 12 + _pulse.value * 8,
                                       spreadRadius: 2)
                                 ]),
@@ -4630,7 +4639,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.65),
+                          color: Colors.black.withValues(alpha: 0.65),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.black12)),
                       child: Text(widget.route,
@@ -4646,7 +4655,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                   child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.78),
+                          color: Colors.black.withValues(alpha: 0.78),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: Colors.black12)),
                       child: Row(
@@ -4655,7 +4664,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                             Column(children: [
                               const Text("ETA",
                                   style: TextStyle(
-                                      color: const Color(0x99000000),
+                                      color: Color(0x99000000),
                                       fontSize: 9,
                                       fontWeight: FontWeight.bold)),
                               Text(_eta(_etaMins),
@@ -4671,12 +4680,12 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                             Column(children: [
                               const Text("Progress",
                                   style: TextStyle(
-                                      color: const Color(0x99000000),
+                                      color: Color(0x99000000),
                                       fontSize: 9,
                                       fontWeight: FontWeight.bold)),
                               Text("${(_progress * 100).toStringAsFixed(0)}%",
                                   style: const TextStyle(
-                                      color: const Color(0xFF212121),
+                                      color: Color(0xFF212121),
                                       fontWeight: FontWeight.w900,
                                       fontSize: 18))
                             ]),
@@ -4687,7 +4696,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                             Column(children: [
                               const Text("Status",
                                   style: TextStyle(
-                                      color: const Color(0x99000000),
+                                      color: Color(0x99000000),
                                       fontSize: 9,
                                       fontWeight: FontWeight.bold)),
                               Text(
@@ -4695,7 +4704,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                       ? "${_status.substring(0, 13)}…"
                                       : _status,
                                   style: const TextStyle(
-                                      color: const Color(0xFF212121),
+                                      color: Color(0xFF212121),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 11))
                             ]),
@@ -4724,7 +4733,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                               Text("${(_progress * 100).toStringAsFixed(1)}%",
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w900,
-                                      color: const Color(0xFF212121))),
+                                      color: Color(0xFF212121))),
                             ]),
                         const SizedBox(height: 8),
                         ClipRRect(
@@ -4743,7 +4752,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                           padding: const EdgeInsets.only(bottom: 5),
                           child: Row(children: [
                             const Icon(Icons.fiber_manual_record,
-                                size: 8, color: const Color(0xFF212121)),
+                                size: 8, color: Color(0xFF212121)),
                             const SizedBox(width: 8),
                             Text(_log[i],
                                 style: const TextStyle(
@@ -4763,7 +4772,7 @@ class _MapGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final p = Paint()
-      ..color = Colors.black.withOpacity(0.04)
+      ..color = Colors.black.withValues(alpha: 0.04)
       ..strokeWidth = 1;
     for (double x = 0; x < size.width; x += 40) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
@@ -4772,7 +4781,7 @@ class _MapGridPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), p);
     }
     final rp = Paint()
-      ..color = Colors.black.withOpacity(0.06)
+      ..color = Colors.black.withValues(alpha: 0.06)
       ..strokeWidth = 6;
     canvas.drawLine(const Offset(0, 80), Offset(size.width, 80), rp);
     canvas.drawLine(Offset(size.width * 0.35, 0),
@@ -4914,7 +4923,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
           child: Column(children: [
             const Text("Outstanding Balance",
                 style: TextStyle(
-                    color: const Color(0x99000000),
+                    color: Color(0x99000000),
                     fontSize: 14,
                     fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
@@ -4937,7 +4946,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10)),
                   child: Text(
                       "Monthly Salary: ₹${widget.driver.monthlySalary.toStringAsFixed(0)}",
@@ -4975,7 +4984,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: [
                                 BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
+                                    color: Colors.black.withValues(alpha: 0.03),
                                     blurRadius: 8)
                               ]),
                           child: ListTile(
@@ -5046,7 +5055,7 @@ class NativePieChartPainter extends CustomPainter {
         2 * math.pi - rAngle,
         true,
         Paint()
-          ..color = const Color(0xFF212121).withOpacity(0.8)
+          ..color = const Color(0xFF212121).withValues(alpha: 0.8)
           ..style = PaintingStyle.fill);
     canvas.drawCircle(Offset(size.width / 2, size.height / 2), size.width / 3,
         Paint()..color = const Color(0xFFFFF8E1));
@@ -5066,12 +5075,3 @@ class NativePieChartPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter _) => true;
 }
-
-
-
-
-
-
-
-
-

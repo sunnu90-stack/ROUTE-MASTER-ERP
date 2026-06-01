@@ -358,8 +358,9 @@ class FirebaseService {
       // Aadhaar â€” 12 digits in groups of 4
       final aadhaarM =
           RegExp(r'([0-9]{4}\s[0-9]{4}\s[0-9]{4})').firstMatch(fullText);
-      if (aadhaarM != null)
+      if (aadhaarM != null) {
         result['aadhaarNo'] = aadhaarM.group(0)!.replaceAll(' ', '');
+      }
 
       // DL number
       final dlM =
@@ -1449,7 +1450,7 @@ class Driver {
               DriverDoc(type: 'dl'),
               DriverDoc(type: 'photo')
             ];
-  bool get isVerified => documents.every((d) => (d as DriverDoc).isUploaded);
+  bool get isVerified => documents.every((d) => (d).isUploaded);
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -1459,7 +1460,7 @@ class Driver {
         'dlNum': dlNum,
         'monthlySalary': monthlySalary,
         'transactions': transactions.map((t) => t.toJson()).toList(),
-        'documents': documents.map((d) => (d as DriverDoc).toJson()).toList()
+        'documents': documents.map((d) => (d).toJson()).toList()
       };
   factory Driver.fromJson(Map<String, dynamic> j) => Driver(
       id: j['id'],
@@ -1807,8 +1808,8 @@ class Asset {
         'tyreCount': tyreCount,
         'axleCount': axleCount,
         'tyreSerials': tyreSerials,
-        'batteries': batteries.map((b) => (b as Battery).toJson()).toList(),
-        'docs': docs.map((d) => (d as FleetDoc).toJson()).toList(),
+        'batteries': batteries.map((b) => (b).toJson()).toList(),
+        'docs': docs.map((d) => (d).toJson()).toList(),
         'ownerName': ownerName,
         'ownerPhone': ownerPhone
       };
@@ -2021,7 +2022,7 @@ class RoutingEngine {
       if (km > 0) dataSource = 'smart_engine';
     }
 
-    if (km == 0)
+    if (km == 0) {
       return {
         'km': 0,
         'diesel': 0,
@@ -2029,6 +2030,7 @@ class RoutingEngine {
         'axles': axles,
         'source': 'not_found'
       };
+    }
     final diesel = (km / fuelEconomy) * AppConfig.defaultDieselPrice;
     final tollRate = kTollPerAxlePerKm[axles] ?? 2.40;
     final toll = (km * tollRate).round();
@@ -2088,8 +2090,7 @@ class RoutingEngine {
 
   static int _fallback(String o, String d) {
     // Normalize: remove spaces, special chars, lowercase
-    final norm =
-        (String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
+    String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z]'), '');
     final a = norm(o);
     final b = norm(d);
     // Key = sorted alphabetically so ahmedabad-mumbai == mumbai-ahmedabad
@@ -2453,11 +2454,12 @@ class RoutingEngine {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         final loc = data['result']?['geometry']?['location'];
-        if (loc != null)
+        if (loc != null) {
           return {
             'lat': (loc['lat'] as num).toDouble(),
             'lng': (loc['lng'] as num).toDouble()
           };
+        }
       }
     } catch (_) {}
     return null;
@@ -3040,9 +3042,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => const MainShell()));
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (_) => const MainShell()));
+      }
     }
   }
 
@@ -3314,20 +3317,22 @@ class _LoginScreenState extends State<LoginScreen> {
     await FirebaseService.sendOTP(
       phone: phone,
       onCodeSent: (vid) {
-        if (mounted)
+        if (mounted) {
           setState(() {
             _verificationId = vid;
             _sent = true;
             _loading = false;
           });
+        }
       },
       onError: (e) {
-        if (mounted)
+        if (mounted) {
           setState(() {
             _loading = false;
             _errorMsg =
                 'OTP failed: ${e.toString().replaceAll(RegExp(r'\[.*?\]'), '').trim()}';
           });
+        }
       },
     );
   }
@@ -3672,16 +3677,19 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
   Future<void> _load() async {
     final p = await SharedPreferences.getInstance();
     try {
-      if (p.getString('fm_profile') != null)
+      if (p.getString('fm_profile') != null) {
         userProfile =
             UserProfile.fromJson(jsonDecode(p.getString('fm_profile')!));
-      if (p.getString('fm_sub') != null)
+      }
+      if (p.getString('fm_sub') != null) {
         subscription =
             SubscriptionInfo.fromJson(jsonDecode(p.getString('fm_sub')!));
-      if (p.getString('fm_ledgers') != null)
+      }
+      if (p.getString('fm_ledgers') != null) {
         ledgers = (jsonDecode(p.getString('fm_ledgers')!) as List)
             .map((e) => TripLedger.fromJson(e))
             .toList();
+      }
       if (p.getString('fm_fleet') != null) {
         fleet = (jsonDecode(p.getString('fm_fleet')!) as List)
             .map((e) => Asset.fromJson(e))
@@ -3702,10 +3710,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     .map((d) => FleetDoc(name: d))
                     .toList()));
       }
-      if (p.getString('fm_drivers') != null)
+      if (p.getString('fm_drivers') != null) {
         drivers = (jsonDecode(p.getString('fm_drivers')!) as List)
             .map((e) => Driver.fromJson(e))
             .toList();
+      }
       if (p.getString('fm_market') != null) {
         marketLoads = (jsonDecode(p.getString('fm_market')!) as List)
             .map((e) => MarketLoad.fromJson(e))
@@ -3713,10 +3722,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
       } else {
         marketLoads = _demoMarketLoads();
       }
-      if (p.getString('fm_kredx') != null)
+      if (p.getString('fm_kredx') != null) {
         kredxApps = (jsonDecode(p.getString('fm_kredx')!) as List)
             .map((e) => KredXApplication.fromJson(e))
             .toList();
+      }
     } catch (_) {}
     // Inject demo data on first launch if nothing saved
     if (drivers.isEmpty && p.getString('fm_drivers') == null) {
@@ -4578,7 +4588,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         setState(() => _idx = 3);
                       },
                       child: const Text("View Ledger",
-                          style: TextStyle(color: const Color(0xFF000000)))),
+                          style: TextStyle(color: Color(0xFF000000)))),
                   TextButton(
                       onPressed: () => Navigator.pop(c),
                       child: const Text("Dismiss"))
@@ -4592,10 +4602,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     final now = DateTime.now();
     if (_lastAdminTap == null ||
         now.difference(_lastAdminTap!).inMilliseconds >
-            AppConfig.adminTapWindowMs)
+            AppConfig.adminTapWindowMs) {
       _adminTaps = 1;
-    else
+    } else {
       _adminTaps++;
+    }
     _lastAdminTap = now;
     if (_adminTaps >= AppConfig.adminTapCount) {
       _adminTaps = 0;
@@ -4634,7 +4645,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18)),
                 title: const Row(children: [
-                  Icon(Icons.sms, color: const Color(0xFF000000)),
+                  Icon(Icons.sms, color: Color(0xFF000000)),
                   SizedBox(width: 8),
                   Text("OTP Verification",
                       style: TextStyle(fontWeight: FontWeight.w800))
@@ -4715,10 +4726,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10))),
                         icon: const Icon(Icons.verified,
-                            color: const Color(0xFF000000), size: 16),
+                            color: Color(0xFF000000), size: 16),
                         label: const Text("Verify",
                             style: TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontWeight: FontWeight.bold)),
                         onPressed: () async {
                           if (otpCtrl.text.length < 6) return;
@@ -4747,14 +4758,14 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18)),
               title: const Row(children: [
-                Icon(Icons.security, color: const Color(0xFF000000)),
+                Icon(Icons.security, color: Color(0xFF000000)),
                 SizedBox(width: 10),
                 Text("Developer Access",
                     style: TextStyle(fontWeight: FontWeight.bold))
               ]),
               content: TextField(
                   style: const TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontSize: 14,
                       fontWeight: FontWeight.w500),
                   controller: ctrl,
@@ -4764,11 +4775,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       filled: true,
                       fillColor: const Color(0xFFFFF8E1),
                       labelStyle: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontSize: 13,
                           fontWeight: FontWeight.w500),
                       floatingLabelStyle: const TextStyle(
-                          color: const Color(0xFFFB8C00),
+                          color: Color(0xFFFB8C00),
                           fontWeight: FontWeight.w800,
                           fontSize: 12),
                       border: OutlineInputBorder(
@@ -4782,7 +4793,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                              color: const Color(0xFFFB8C00), width: 2)))),
+                              color: Color(0xFFFB8C00), width: 2)))),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(c),
@@ -4837,7 +4848,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       }
                     },
                     child: const Text("Enter",
-                        style: TextStyle(color: const Color(0xFF000000)))),
+                        style: TextStyle(color: Color(0xFF000000)))),
               ],
             ));
   }
@@ -4861,7 +4872,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               const SizedBox(height: 16),
               Text("Unlock $feat",
                   style: const TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontSize: 22,
                       fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
@@ -4884,7 +4895,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       },
                       child: const Text("View Plans & Upgrade",
                           style: TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.bold,
                               fontSize: 16)))),
               const SizedBox(height: 12),
@@ -4934,13 +4945,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               "Good ${DateTime.now().hour < 12 ? 'Morning' : DateTime.now().hour < 17 ? 'Afternoon' : 'Evening'} ðŸ‘‹",
               style: const TextStyle(
                   fontSize: 13,
-                  color: const Color(0xFF000000),
+                  color: Color(0xFF000000),
                   fontWeight: FontWeight.w500)),
           const Text("Operations Hub",
               style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF000000),
+                  color: Color(0xFF000000),
                   height: 1.2)),
         ]),
         GestureDetector(
@@ -4961,13 +4972,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   ]),
               child: Row(children: [
                 const Icon(Icons.workspace_premium,
-                    size: 13, color: const Color(0xFF000000)),
+                    size: 13, color: Color(0xFF000000)),
                 const SizedBox(width: 5),
                 Text(subscription.tierName,
                     style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
-                        color: const Color(0xFF000000)))
+                        color: Color(0xFF000000)))
               ]),
             )),
       ]),
@@ -5006,7 +5017,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
           decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [
                 Color(0xFFFFF8E1),
-                const Color(0xFFFB8C00),
+                Color(0xFFFB8C00),
                 Color(0xFF0EA5E9)
               ], stops: [
                 0.0,
@@ -5057,19 +5068,19 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             style: const TextStyle(
                                 fontSize: 34,
                                 fontWeight: FontWeight.w900,
-                                color: const Color(0xFF000000))),
+                                color: Color(0xFF000000))),
                         const SizedBox(height: 16),
                         SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(children: [
                               _heroStat(
                                   "Profit",
-                                  "â‚¹${profit >= 100000 ? (profit / 100000).toStringAsFixed(1) + 'L' : profit.toStringAsFixed(0)}",
+                                  "â‚¹${profit >= 100000 ? '${(profit / 100000).toStringAsFixed(1)}L' : profit.toStringAsFixed(0)}",
                                   const Color(0xFFFB8C00)),
                               const SizedBox(width: 14),
                               _heroStat(
                                   "Expenses",
-                                  "â‚¹${exp >= 100000 ? (exp / 100000).toStringAsFixed(1) + 'L' : exp.toStringAsFixed(0)}",
+                                  "â‚¹${exp >= 100000 ? '${(exp / 100000).toStringAsFixed(1)}L' : exp.toStringAsFixed(0)}",
                                   const Color(0xFFE53E3E))
                             ])),
                       ]),
@@ -5113,7 +5124,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                               children: [
                                                 Text(r.$1,
                                                     style: const TextStyle(
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFF8FBC8F),
                                                         fontSize: 13)),
                                                 Text(r.$2,
@@ -5160,7 +5171,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                               children: [
                                                 Text(r.$1,
                                                     style: const TextStyle(
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFF8FBC8F),
                                                         fontSize: 13)),
                                                 Text(r.$2,
@@ -5222,7 +5233,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           horizontal: 20, vertical: 8),
                                       child: Row(children: [
                                         const Icon(Icons.local_shipping,
-                                            color: const Color(0xFF000000)),
+                                            color: Color(0xFF000000)),
                                         const SizedBox(width: 10),
                                         Text(
                                             "Active Movements (${active.length})",
@@ -5230,7 +5241,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                 fontSize: 17,
                                                 fontWeight: FontWeight.w900,
                                                 color:
-                                                    const Color(0xFF000000))),
+                                                    Color(0xFF000000))),
                                       ])),
                                   const Divider(height: 1),
                                   Expanded(
@@ -5281,7 +5292,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                                 .w900,
                                                                             fontSize:
                                                                                 14,
-                                                                            color: const Color(
+                                                                            color: Color(
                                                                                 0xFFF2EDE4)),
                                                                         overflow:
                                                                             TextOverflow.ellipsis)),
@@ -5432,7 +5443,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w900,
-                color: const Color(0xFF000000),
+                color: Color(0xFF000000),
                 letterSpacing: 0.3))
       ]),
       const SizedBox(height: 14),
@@ -5504,7 +5515,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     letterSpacing: 0.3))
           ]),
           GestureDetector(
@@ -5565,13 +5576,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
-                      color: const Color(0xFF000000))),
+                      color: Color(0xFF000000))),
             ),
             const SizedBox(height: 2),
             Text(label,
                 style: const TextStyle(
                     fontSize: 10,
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     fontWeight: FontWeight.w600),
                 overflow: TextOverflow.ellipsis),
           ]));
@@ -5605,7 +5616,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
-                      color: const Color(0xFF000000)),
+                      color: Color(0xFF000000)),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -5679,7 +5690,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 Text(label,
                     style: const TextStyle(
                         fontSize: 10,
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3)),
                 const SizedBox(height: 2),
@@ -5751,7 +5762,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
-                        color: const Color(0xFF000000)),
+                        color: Color(0xFF000000)),
                     overflow: TextOverflow.ellipsis),
                 Text("${l.vehicleNo} â€¢ ${l.route}",
                     style: const TextStyle(
@@ -5788,7 +5799,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,
-                        color: const Color(0xFF000000)))),
+                        color: Color(0xFF000000)))),
             Text(
                 l.partyPending > 0
                     ? "â‚¹${l.partyPending.toStringAsFixed(0)} due"
@@ -5870,7 +5881,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 content: Column(mainAxisSize: MainAxisSize.min, children: [
                   TextField(
                       style: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontSize: 14,
                           fontWeight: FontWeight.w500),
                       controller: ctrl,
@@ -5880,11 +5891,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           filled: true,
                           fillColor: const Color(0xFFFFF8E1),
                           labelStyle: const TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontSize: 13,
                               fontWeight: FontWeight.w500),
                           floatingLabelStyle: const TextStyle(
-                              color: const Color(0xFFFB8C00),
+                              color: Color(0xFFFB8C00),
                               fontWeight: FontWeight.w800,
                               fontSize: 12),
                           border: OutlineInputBorder(
@@ -5898,13 +5909,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(
-                                  color: const Color(0xFFFB8C00), width: 2)))),
+                                  color: Color(0xFFFB8C00), width: 2)))),
                   if (fleet.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Wrap(
                         spacing: 8,
                         children: fleet.take(8).map<Widget>((a) {
-                          final asset = a as Asset;
+                          final asset = a;
                           return GestureDetector(
                               onTap: () => ctrl.text = asset.number,
                               child: Chip(
@@ -5939,7 +5950,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                             : ctrl.text.toUpperCase())));
                       },
                       child: const Text("Track Now",
-                          style: TextStyle(color: const Color(0xFF000000))))
+                          style: TextStyle(color: Color(0xFF000000))))
                 ]));
   }
 
@@ -5966,7 +5977,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: const Color(0xFF000000))),
+                      color: Color(0xFF000000))),
               Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -5985,11 +5996,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               Expanded(
                   child: DropdownButtonFormField<String>(
                       style: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontSize: 14,
                           fontWeight: FontWeight.w500),
                       isExpanded: true,
-                      value: _fOriginState,
+                      initialValue: _fOriginState,
                       decoration: InputDecoration(
                           labelText: "From State",
                           isDense: true,
@@ -6010,11 +6021,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               Expanded(
                   child: DropdownButtonFormField<String>(
                       style: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontSize: 14,
                           fontWeight: FontWeight.w500),
                       isExpanded: true,
-                      value: _fDestState,
+                      initialValue: _fDestState,
                       decoration: InputDecoration(
                           labelText: "To State",
                           isDense: true,
@@ -6111,7 +6122,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                           child: Text(load.originState.isNotEmpty ? load.originState : "Origin",
                                                               style: const TextStyle(
                                                                   fontSize: 10,
-                                                                  color: const Color(0xFFFB8C00),
+                                                                  color: Color(0xFFFB8C00),
                                                                   fontWeight: FontWeight.bold))),
                                                       const Padding(
                                                           padding: EdgeInsets
@@ -6144,7 +6155,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                           child: Text(load.destState.isNotEmpty ? load.destState : "Dest",
                                                               style: const TextStyle(
                                                                   fontSize: 10,
-                                                                  color: const Color(0xFFE53E3E),
+                                                                  color: Color(0xFFE53E3E),
                                                                   fontWeight: FontWeight.bold))),
                                                     ]),
                                                 const SizedBox(height: 8),
@@ -6153,7 +6164,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                         fontWeight:
                                                             FontWeight.w800,
                                                         fontSize: 14,
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFF1A3A2A)),
                                                     overflow:
                                                         TextOverflow.ellipsis,
@@ -6167,7 +6178,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                 Text(
                                                     "â‚¹${(load.targetPrice / 1000).toStringAsFixed(0)}K",
                                                     style: const TextStyle(
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFF52A06A),
                                                         fontWeight:
                                                             FontWeight.w900,
@@ -6282,7 +6293,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                             child: OutlinedButton.icon(
                                                 style: OutlinedButton.styleFrom(
                                                     side: const BorderSide(
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFF3D7A52)),
                                                     shape: RoundedRectangleBorder(
                                                         borderRadius:
@@ -6306,8 +6317,8 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     prefillDestFactory: load.destFactory,
                                                     prefillWeight: load.weightTons,
                                                     prefillVehicleType: load.vehicleType),
-                                                icon: const Icon(Icons.edit_note_rounded, size: 16, color: const Color(0xFFFB8C00)),
-                                                label: const Text("Fill / Edit Dispatch Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFFFB8C00))))),
+                                                icon: const Icon(Icons.edit_note_rounded, size: 16, color: Color(0xFFFB8C00)),
+                                                label: const Text("Fill / Edit Dispatch Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFFB8C00))))),
                                         const SizedBox(height: 8),
                                         // Consignor verification status
                                         Container(
@@ -6441,7 +6452,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         _confirmBooking(load);
                       },
                       child: const Text("Proceed Anyway",
-                          style: TextStyle(color: const Color(0xFF000000)))),
+                          style: TextStyle(color: Color(0xFF000000)))),
                 ],
               ));
       return;
@@ -6580,7 +6591,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               prefillVehicleType: load.vehicleType));
                     },
                     child: const Text("Book & Fill Details",
-                        style: TextStyle(color: const Color(0xFF000000)))),
+                        style: TextStyle(color: Color(0xFF000000)))),
               ],
             ));
   }
@@ -6594,7 +6605,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF000000))),
+                  color: Color(0xFF000000))),
           const SizedBox(height: 6),
           const Text("Broadcast to verified fleet operators",
               style: TextStyle(color: Colors.grey, fontSize: 13)),
@@ -6615,7 +6626,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 13,
-                            color: const Color(0xFF000000))),
+                            color: Color(0xFF000000))),
                     const SizedBox(height: 8),
                     CitySearchField(
                         controller: _pOriginCtrl,
@@ -6653,7 +6664,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 13,
-                            color: const Color(0xFF000000))),
+                            color: Color(0xFF000000))),
                     const SizedBox(height: 8),
                     CitySearchField(
                         controller: _pDestCtrl,
@@ -6691,7 +6702,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       Expanded(
                           child: TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: _pWeightCtrl,
@@ -6701,11 +6712,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -6719,27 +6730,27 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2))))),
                       const SizedBox(width: 12),
                       Expanded(
                           child: DropdownButtonFormField<String>(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               isExpanded: true,
-                              value: _pVehicleType,
+                              initialValue: _pVehicleType,
                               decoration: InputDecoration(
                                   labelText: "Vehicle Type",
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -6753,21 +6764,21 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2))),
                               items: ["SS Tanker", "MS Tanker", "Container", "Open Truck", "Trailer", "LCV", "Reefer"]
                                   .map((v) => DropdownMenuItem(
                                       value: v,
                                       child: Text(v,
                                           overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(color: const Color(0xFF000000)))))
+                                          style: const TextStyle(color: Color(0xFF000000)))))
                                   .toList(),
                               onChanged: (v) => setState(() => _pVehicleType = v!))),
                     ]),
                     const SizedBox(height: 16),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: _pMaterialCtrl,
@@ -6779,11 +6790,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -6797,12 +6808,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 16),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: _pPriceCtrl,
@@ -6814,11 +6825,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -6832,7 +6843,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 28),
                     SizedBox(
@@ -6915,10 +6926,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                         "âœ… Load Posted to Market Board!")));
                           },
                           icon: const Icon(Icons.broadcast_on_personal,
-                              color: const Color(0xFF000000)),
+                              color: Color(0xFF000000)),
                           label: const Text("Broadcast to Market",
                               style: TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold)),
                         )),
@@ -6929,9 +6940,9 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
   // â”€â”€ KHATA LEDGER (Refined) â”€â”€
   Widget _buildKhata() {
     List<TripLedger> fl = ledgers;
-    if (_khataFilter == "Party" && _khataFilterVal != null)
+    if (_khataFilter == "Party" && _khataFilterVal != null) {
       fl = ledgers.where((l) => l.partyName == _khataFilterVal).toList();
-    else if (_khataFilter == "Vehicle" && _khataFilterVal != null)
+    } else if (_khataFilter == "Vehicle" && _khataFilterVal != null)
       fl = ledgers.where((l) => l.vehicleNo == _khataFilterVal).toList();
     else if (_khataFilter == "Due Soon")
       fl = ledgers.where((l) => l.isDueSoon && !l.isPaymentOverdue).toList();
@@ -6956,7 +6967,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 22,
-                        color: const Color(0xFF000000))),
+                        color: Color(0xFF000000))),
                 Row(children: [
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     Text("${fl.length} entries",
@@ -6975,11 +6986,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   const SizedBox(width: 10),
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert,
-                        color: const Color(0xFF000000)),
+                        color: Color(0xFF000000)),
                     onSelected: (v) {
-                      if (v == 'excel')
+                      if (v == 'excel') {
                         _exportKhataExcel(fl);
-                      else if (v == 'csv_import') _showCSVImport();
+                      } else if (v == 'csv_import') _showCSVImport();
                     },
                     itemBuilder: (_) => [
                       const PopupMenuItem(
@@ -7024,7 +7035,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     style: const TextStyle(
                                         fontWeight: FontWeight.w900,
                                         fontSize: 14,
-                                        color: const Color(0xFF000000))))
+                                        color: Color(0xFF000000))))
                           ]),
                           Column(children: [
                             const Text("Pending",
@@ -7093,7 +7104,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               if (_khataFilter == "Party" && ledgers.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                    value: _khataFilterVal,
+                    initialValue: _khataFilterVal,
                     isDense: true,
                     hint: const Text("Select Party"),
                     decoration: InputDecoration(
@@ -7101,11 +7112,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -7119,12 +7130,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2))),
+                                color: Color(0xFFFB8C00), width: 2))),
                     items: ledgers
-                        .map((e) => (e as TripLedger).partyName)
+                        .map((e) => (e).partyName)
                         .toSet()
                         .map((p) => DropdownMenuItem<String>(
-                            value: p as String,
+                            value: p,
                             child: Text(p, overflow: TextOverflow.ellipsis)))
                         .toList(),
                     onChanged: (v) => setState(() => _khataFilterVal = v))
@@ -7132,7 +7143,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               if (_khataFilter == "Vehicle" && ledgers.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                    value: _khataFilterVal,
+                    initialValue: _khataFilterVal,
                     isDense: true,
                     hint: const Text("Select Vehicle"),
                     decoration: InputDecoration(
@@ -7140,11 +7151,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -7158,13 +7169,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2))),
+                                color: Color(0xFFFB8C00), width: 2))),
                     items: ledgers
-                        .map((e) => (e as TripLedger).vehicleNo)
-                        .where((v) => (v as String).isNotEmpty)
+                        .map((e) => (e).vehicleNo)
+                        .where((v) => (v).isNotEmpty)
                         .toSet()
                         .map((v) => DropdownMenuItem<String>(
-                            value: v as String,
+                            value: v,
                             child: Text(v, overflow: TextOverflow.ellipsis)))
                         .toList(),
                     onChanged: (v) => setState(() => _khataFilterVal = v))
@@ -7258,7 +7269,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                   fontWeight: FontWeight.w900,
                                                   fontSize: 14,
                                                   color:
-                                                      const Color(0xFF000000)))
+                                                      Color(0xFF000000)))
                                         ]),
                                         Container(
                                             padding: const EdgeInsets.symmetric(
@@ -7366,10 +7377,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
       floatingActionButton: FloatingActionButton.extended(
           backgroundColor: const Color(0xFFFB8C00),
           elevation: 6,
-          icon: const Icon(Icons.add, color: const Color(0xFF000000)),
+          icon: const Icon(Icons.add, color: Color(0xFF000000)),
           label: const Text("New Entry",
               style: TextStyle(
-                  color: const Color(0xFF000000),
+                  color: Color(0xFF000000),
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.3)),
           onPressed: () => _showNewEntry()),
@@ -7470,24 +7481,24 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(20)),
                 title: const Row(children: [
                   Icon(Icons.assignment_ind_rounded,
-                      color: const Color(0xFFFB8C00)),
+                      color: Color(0xFFFB8C00)),
                   SizedBox(width: 10),
                   Expanded(
                       child: Text("Registration Required",
                           style: TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.w900,
                               fontSize: 16)))
                 ]),
                 content: const Text(
                     "Before posting or booking loads, please complete your company KYC profile. This is required for invoice generation, GST compliance, and consignor verification.",
                     style: TextStyle(
-                        color: const Color(0xFF000000), fontSize: 13)),
+                        color: Color(0xFF000000), fontSize: 13)),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.pop(c, false),
                       child: const Text("Cancel",
-                          style: TextStyle(color: const Color(0xFF000000)))),
+                          style: TextStyle(color: Color(0xFF000000)))),
                   GestureDetector(
                       onTap: () => Navigator.pop(c, true),
                       child: Container(
@@ -7495,13 +7506,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               horizontal: 18, vertical: 8),
                           decoration: BoxDecoration(
                               gradient: const LinearGradient(colors: [
-                                const Color(0xFFFB8C00),
+                                Color(0xFFFB8C00),
                                 Color(0xFF0EA5E9)
                               ]),
                               borderRadius: BorderRadius.circular(10)),
                           child: const Text("Complete Now",
                               style: TextStyle(
-                                  color: const Color(0xFFFFF8E1),
+                                  color: Color(0xFFFFF8E1),
                                   fontWeight: FontWeight.w800)))),
                 ],
               ));
@@ -7515,19 +7526,20 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
       regDone = prefs2.getBool('rm_registration_done') ?? false;
       if (!regDone) {
         // User backed out of registration â€” block dispatch
-        if (mounted)
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: const Color(0xFFFB8C00),
+              backgroundColor: Color(0xFFFB8C00),
               behavior: SnackBarBehavior.floating,
               content: Text(
                   "Registration must be completed to post/dispatch loads")));
+        }
         return;
       }
     }
     // Start with self fleet always. Only switch to market if fleet has NO matching vehicle.
     final hasMatchingVehicle = prefillVehicleType == null ||
         prefillVehicleType.isEmpty ||
-        fleet.any((v) => (v as Asset).type.toLowerCase().contains(
+        fleet.any((v) => (v).type.toLowerCase().contains(
             prefillVehicleType.toLowerCase().split(' ').first.toLowerCase()));
     VehicleOwnership own =
         hasMatchingVehicle ? VehicleOwnership.self : VehicleOwnership.market;
@@ -7552,7 +7564,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
     final distCtrl = TextEditingController();
     final feCtrl = TextEditingController(text: "3.5");
     // Auto-calc diesel when km or mileage changes
-    void _autoCalcDiesel() {
+    void autoCalcDiesel() {
       final km = double.tryParse(distCtrl.text) ?? 0;
       final fe = double.tryParse(feCtrl.text) ?? 3.5;
       if (km > 0 && fe > 0) {
@@ -7562,8 +7574,8 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
       }
     }
 
-    distCtrl.addListener(_autoCalcDiesel);
-    feCtrl.addListener(_autoCalcDiesel);
+    distCtrl.addListener(autoCalcDiesel);
+    feCtrl.addListener(autoCalcDiesel);
     final wtCtrl = TextEditingController(
         text: prefillWeight != null && prefillWeight > 0
             ? prefillWeight.toStringAsFixed(1)
@@ -7623,10 +7635,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.w900,
-                                      color: const Color(0xFF000000))),
+                                      color: Color(0xFF000000))),
                               IconButton(
                                   icon: const Icon(Icons.close,
-                                      color: const Color(0xFF000000)),
+                                      color: Color(0xFF000000)),
                                   onPressed: () => Navigator.pop(ctx)),
                             ]),
                         const SizedBox(height: 16),
@@ -7658,7 +7670,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               flex: 2,
                               child: TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: pCtrl,
@@ -7680,13 +7692,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))))),
                           const SizedBox(width: 10),
                           Expanded(
                               child: TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: tmCtrl,
@@ -7709,7 +7721,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))))),
                         ]),
                         const SizedBox(height: 12),
@@ -7720,13 +7732,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF000000))),
+                                    color: Color(0xFF000000))),
                             children: [
                               Row(children: [
                                 Expanded(
                                     child: TextField(
                                         style: const TextStyle(
-                                            color: const Color(0xFF000000),
+                                            color: Color(0xFF000000),
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
                                         controller: cpCtrl,
@@ -7750,13 +7762,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     BorderRadius.circular(10),
                                                 borderSide: const BorderSide(
                                                     color:
-                                                        const Color(0xFFFB8C00),
+                                                        Color(0xFFFB8C00),
                                                     width: 2))))),
                                 const SizedBox(width: 10),
                                 Expanded(
                                     child: TextField(
                                         style: const TextStyle(
-                                            color: const Color(0xFF000000),
+                                            color: Color(0xFF000000),
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
                                         controller: cgCtrl,
@@ -7779,13 +7791,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     BorderRadius.circular(10),
                                                 borderSide: const BorderSide(
                                                     color:
-                                                        const Color(0xFFFB8C00),
+                                                        Color(0xFFFB8C00),
                                                     width: 2)))))
                               ]),
                               const SizedBox(height: 8),
                               TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: ceCtrl,
@@ -7809,7 +7821,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2)))),
                               const SizedBox(height: 8),
                             ]),
@@ -7820,7 +7832,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,
-                                color: const Color(0xFF000000))),
+                                color: Color(0xFF000000))),
                         const SizedBox(height: 4),
                         // Origin
                         Container(
@@ -7857,9 +7869,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                       setS(() {
                                         loFactName = name;
                                         loFactPlaceId = pid;
-                                        if (rCtrl.text.isEmpty)
+                                        if (rCtrl.text.isEmpty) {
                                           rCtrl.text =
                                               "$name â†’ ${ldFactName.isNotEmpty ? ldFactName : lDCity}";
+                                        }
                                       });
                                       // Auto-calc against ANY destination (factory OR city)
                                       final destName = ldFactName.isNotEmpty
@@ -7870,7 +7883,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           : lDCityPlaceId;
                                       if (destName.isNotEmpty &&
                                           name.isNotEmpty) {
-                                        if (mounted)
+                                        if (mounted) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                                   backgroundColor:
@@ -7884,23 +7897,25 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                         width: 14,
                                                         height: 14,
                                                         child: CircularProgressIndicator(
-                                                            color: const Color(
+                                                            color: Color(
                                                                 0xFFF2EDE4),
                                                             strokeWidth: 2)),
                                                     SizedBox(width: 10),
                                                     Text(
                                                         "ðŸ“ Calculating distance via Google Maps...")
                                                   ])));
+                                        }
                                         Future.delayed(
                                             const Duration(milliseconds: 400),
                                             () async {
                                           int ax = 6;
                                           try {
-                                            if (selVeh != null)
+                                            if (selVeh != null) {
                                               ax = fleet
                                                   .firstWhere(
                                                       (v) => v.number == selVeh)
                                                   .axleCount;
+                                            }
                                           } catch (_) {}
                                           final res =
                                               await RoutingEngine.calculate(
@@ -7985,11 +8000,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                               () async {
                                             int ax = 6;
                                             try {
-                                              if (selVeh != null)
+                                              if (selVeh != null) {
                                                 ax = fleet
                                                     .firstWhere((v) =>
                                                         v.number == selVeh)
                                                     .axleCount;
+                                              }
                                             } catch (_) {}
                                             final res =
                                                 await RoutingEngine.calculate(
@@ -8012,7 +8028,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     res['diesel'].toString();
                                                 calcDone = true;
                                               });
-                                              if (mounted)
+                                              if (mounted) {
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(SnackBar(
                                                         backgroundColor: Colors
@@ -8025,6 +8041,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                 seconds: 3),
                                                         content: Text(
                                                             "ðŸ“ ${res['km']} km Â· â‚¹${res['diesel']} diesel Â· â‚¹${res['toll']} toll")));
+                                              }
                                             }
                                           });
                                         }
@@ -8052,11 +8069,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     children: [
                                       Icon(Icons.arrow_downward,
                                           size: 12,
-                                          color: const Color(0xFF000000)),
+                                          color: Color(0xFF000000)),
                                       SizedBox(width: 4),
                                       Text("TO",
                                           style: TextStyle(
-                                              color: const Color(0xFF000000),
+                                              color: Color(0xFF000000),
                                               fontSize: 10,
                                               fontWeight: FontWeight.w900,
                                               letterSpacing: 1))
@@ -8109,7 +8126,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           : lOCityPlaceId;
                                       if (origName.isNotEmpty &&
                                           name.isNotEmpty) {
-                                        if (mounted)
+                                        if (mounted) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                                   backgroundColor:
@@ -8123,23 +8140,25 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                         width: 14,
                                                         height: 14,
                                                         child: CircularProgressIndicator(
-                                                            color: const Color(
+                                                            color: Color(
                                                                 0xFFF2EDE4),
                                                             strokeWidth: 2)),
                                                     SizedBox(width: 10),
                                                     Text(
                                                         "ðŸ“ Calculating distance via Google Maps...")
                                                   ])));
+                                        }
                                         Future.delayed(
                                             const Duration(milliseconds: 400),
                                             () async {
                                           int ax = 6;
                                           try {
-                                            if (selVeh != null)
+                                            if (selVeh != null) {
                                               ax = fleet
                                                   .firstWhere(
                                                       (v) => v.number == selVeh)
                                                   .axleCount;
+                                            }
                                           } catch (_) {}
                                           final res =
                                               await RoutingEngine.calculate(
@@ -8224,11 +8243,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                               () async {
                                             int ax = 6;
                                             try {
-                                              if (selVeh != null)
+                                              if (selVeh != null) {
                                                 ax = fleet
                                                     .firstWhere((v) =>
                                                         v.number == selVeh)
                                                     .axleCount;
+                                              }
                                             } catch (_) {}
                                             final res =
                                                 await RoutingEngine.calculate(
@@ -8251,7 +8271,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     res['diesel'].toString();
                                                 calcDone = true;
                                               });
-                                              if (mounted)
+                                              if (mounted) {
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(SnackBar(
                                                         backgroundColor: Colors
@@ -8264,6 +8284,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                 seconds: 3),
                                                         content: Text(
                                                             "ðŸ“ ${res['km']} km Â· â‚¹${res['diesel']} diesel Â· â‚¹${res['toll']} toll")));
+                                              }
                                             }
                                           });
                                         }
@@ -8281,7 +8302,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         const SizedBox(height: 10),
                         TextField(
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                             controller: rCtrl,
@@ -8301,7 +8322,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         width: 2)))),
                         const SizedBox(height: 12),
 
@@ -8311,11 +8332,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               child: own == VehicleOwnership.self
                                   ? DropdownButtonFormField<String>(
                                       style: const TextStyle(
-                                          color: const Color(0xFF000000),
+                                          color: Color(0xFF000000),
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500),
                                       isExpanded: true,
-                                      value: selVeh,
+                                      initialValue: selVeh,
                                       decoration: InputDecoration(
                                           labelText: "Fleet Vehicle",
                                           filled: true,
@@ -8335,18 +8356,18 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                   BorderRadius.circular(10),
                                               borderSide: const BorderSide(
                                                   color:
-                                                      const Color(0xFFFB8C00),
+                                                      Color(0xFFFB8C00),
                                                   width: 2))),
                                       items:
-                                          fleet.map((v) => (v as Asset).number).toSet().map((n) => DropdownMenuItem<String>(value: n as String, child: Text(n, overflow: TextOverflow.ellipsis))).toList(),
+                                          fleet.map((v) => (v).number).toSet().map((n) => DropdownMenuItem<String>(value: n, child: Text(n, overflow: TextOverflow.ellipsis))).toList(),
                                       onChanged: (v) => setS(() => selVeh = v))
-                                  : TextField(style: const TextStyle(color: const Color(0xFF000000), fontSize: 14, fontWeight: FontWeight.w500), controller: vCtrl, decoration: InputDecoration(labelText: "Market Vehicle No.", filled: true, fillColor: const Color(0xFFFFF8E1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00))), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                  : TextField(style: const TextStyle(color: Color(0xFF000000), fontSize: 14, fontWeight: FontWeight.w500), controller: vCtrl, decoration: InputDecoration(labelText: "Market Vehicle No.", filled: true, fillColor: const Color(0xFFFFF8E1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00))), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                           const SizedBox(width: 10),
                           if (own == VehicleOwnership.self)
                             Expanded(
                                 child: DropdownButtonFormField<String>(
                                     style: const TextStyle(
-                                        color: const Color(0xFF000000),
+                                        color: Color(0xFF000000),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500),
                                     decoration: InputDecoration(
@@ -8367,10 +8388,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                             borderRadius:
                                                 BorderRadius.circular(10),
                                             borderSide: const BorderSide(
-                                                color: const Color(0xFFFB8C00),
+                                                color: Color(0xFFFB8C00),
                                                 width: 2))),
                                     items: drivers
-                                        .map((d) => DropdownMenuItem<String>(value: (d as Driver).name, child: Text(d.name, overflow: TextOverflow.ellipsis)))
+                                        .map((d) => DropdownMenuItem<String>(value: (d).name, child: Text(d.name, overflow: TextOverflow.ellipsis)))
                                         .toList(),
                                     onChanged: (v) => setS(() => selDrv = v))),
                         ]),
@@ -8379,7 +8400,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           Expanded(
                               child: TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: ewCtrl,
@@ -8401,13 +8422,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))))),
                           const SizedBox(width: 10),
                           Expanded(
                               child: TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: matCtrl,
@@ -8429,14 +8450,14 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))))),
                         ]),
                         const SizedBox(height: 10),
                         // Material Invoice Number
                         TextField(
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                             controller: invCtrl,
@@ -8457,7 +8478,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         width: 2)))),
                         const SizedBox(height: 12),
                         // Part Load Section
@@ -8468,7 +8489,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   style: TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 13,
-                                      color: const Color(0xFF000000))),
+                                      color: Color(0xFF000000))),
                               TextButton.icon(
                                 onPressed: () {
                                   final nameC = TextEditingController();
@@ -8495,7 +8516,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     children: [
                                                       TextField(
                                                           style: const TextStyle(
-                                                              color: const Color(
+                                                              color: Color(
                                                                   0xFFF2EDE4),
                                                               fontSize: 14,
                                                               fontWeight:
@@ -8523,12 +8544,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                   borderSide:
                                                                       const BorderSide(
                                                                           color: Color(0xFFFB8C00))),
-                                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2)))),
+                                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2)))),
                                                       const SizedBox(
                                                           height: 10),
                                                       TextField(
                                                           style: const TextStyle(
-                                                              color: const Color(
+                                                              color: Color(
                                                                   0xFFF2EDE4),
                                                               fontSize: 14,
                                                               fontWeight:
@@ -8556,14 +8577,14 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                   borderSide:
                                                                       const BorderSide(
                                                                           color: Color(0xFFFB8C00))),
-                                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2)))),
+                                                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2)))),
                                                       const SizedBox(
                                                           height: 10),
                                                       Row(children: [
                                                         Expanded(
                                                             child: TextField(
                                                                 style: const TextStyle(
-                                                                    color: const Color(
+                                                                    color: Color(
                                                                         0xFFF2EDE4),
                                                                     fontSize:
                                                                         14,
@@ -8591,7 +8612,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                     enabledBorder: OutlineInputBorder(
                                                                         borderRadius: BorderRadius.circular(10),
                                                                         borderSide: const BorderSide(color: Color(0xFFFB8C00))),
-                                                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                                                         const SizedBox(
                                                             width: 8),
                                                         StatefulBuilder(
@@ -8632,8 +8653,9 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       onPressed: () {
                                                         if (nameC
                                                                 .text.isEmpty ||
-                                                            wtC.text.isEmpty)
+                                                            wtC.text.isEmpty) {
                                                           return;
+                                                        }
                                                         setS(() => partItems
                                                             .add(InvoiceItem(
                                                                 materialName:
@@ -8650,7 +8672,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       },
                                                       child: const Text("Add",
                                                           style: TextStyle(
-                                                              color: const Color(
+                                                              color: Color(
                                                                   0xFFF2EDE4)))),
                                                 ],
                                               )));
@@ -8681,7 +8703,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           style: const TextStyle(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 13,
-                                              color: const Color(0xFF000000))),
+                                              color: Color(0xFF000000))),
                                       Text(
                                           "${e.value.weight} ${e.value.weightUnit}${e.value.invoiceNo.isNotEmpty ? ' | Inv: ${e.value.invoiceNo}' : ''}",
                                           style: const TextStyle(
@@ -8725,18 +8747,18 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     fillColor:
                                                         const Color(0xFFFFF8E1),
                                                     labelStyle: const TextStyle(
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFF8FBC8F),
                                                         fontSize: 13,
                                                         fontWeight:
                                                             FontWeight.w500),
                                                     floatingLabelStyle: const TextStyle(
-                                                        color: const Color(0xFFFB8C00),
+                                                        color: Color(0xFFFB8C00),
                                                         fontWeight: FontWeight.w800,
                                                         fontSize: 12),
                                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00))),
                                                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00))),
-                                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2)))),
+                                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2)))),
                                             if (prefillWeight != null &&
                                                 prefillWeight > 0)
                                               Text(
@@ -8749,10 +8771,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           Expanded(
                               child: DropdownButtonFormField<String>(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
-                                  value: wUnit,
+                                  initialValue: wUnit,
                                   decoration: InputDecoration(
                                       labelText: "Unit",
                                       filled: true,
@@ -8771,7 +8793,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))),
                                   items: ["MT", "KG", "LT", "TON"]
                                       .map((u) =>
@@ -8784,7 +8806,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           Expanded(
                               child: TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: fCtrl,
@@ -8807,13 +8829,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))))),
                           const SizedBox(width: 10),
                           Expanded(
                               child: TextField(
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500),
                                   controller: rcvdCtrl,
@@ -8836,7 +8858,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           borderRadius:
                                               BorderRadius.circular(10),
                                           borderSide: const BorderSide(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               width: 2))))),
                         ]),
                         const SizedBox(height: 12),
@@ -8860,10 +8882,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     Expanded(
                                         child: DropdownButtonFormField<GstType>(
                                             style: const TextStyle(
-                                                color: const Color(0xFF000000),
+                                                color: Color(0xFF000000),
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w500),
-                                            value: gst,
+                                            initialValue: gst,
                                             decoration: InputDecoration(
                                                 labelText: "GST Type",
                                                 isDense: true,
@@ -8887,7 +8909,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                 focusedBorder: OutlineInputBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(8),
-                                                    borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))),
+                                                    borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))),
                                             items: const [
                                               DropdownMenuItem(
                                                   value: GstType.none,
@@ -8904,10 +8926,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     Expanded(
                                         child: DropdownButtonFormField<double>(
                                             style: const TextStyle(
-                                                color: const Color(0xFF000000),
+                                                color: Color(0xFF000000),
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w500),
-                                            value: gstRate,
+                                            initialValue: gstRate,
                                             decoration: InputDecoration(
                                                 labelText: "Rate %",
                                                 isDense: true,
@@ -8928,7 +8950,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                             Color(0xFFFB8C00))),
                                                 focusedBorder: OutlineInputBorder(
                                                     borderRadius: BorderRadius.circular(8),
-                                                    borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))),
+                                                    borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))),
                                             items: [5.0, 12.0, 18.0, 28.0].map((r) => DropdownMenuItem(value: r, child: Text("$r%"))).toList(),
                                             onChanged: (v) => setS(() => gstRate = v!))),
                                   ]),
@@ -8941,7 +8963,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600)),
                                       value: gstInc,
-                                      activeColor: Colors.indigo,
+                                      activeThumbColor: Colors.indigo,
                                       onChanged: (v) => setS(() => gstInc = v)),
                                 ])),
                         const SizedBox(height: 12),
@@ -9022,7 +9044,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     Expanded(
                                         child: TextField(
                                             style: const TextStyle(
-                                                color: const Color(0xFF000000),
+                                                color: Color(0xFF000000),
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w500),
                                             controller: penCtrl,
@@ -9048,7 +9070,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                 focusedBorder: OutlineInputBorder(
                                                     borderRadius:
                                                         BorderRadius.circular(8),
-                                                    borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                                    borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                                   ]),
                                 ])),
                         const SizedBox(height: 12),
@@ -9073,7 +9095,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           child: TextField(
                                               style: const TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w500),
                                               controller: mfCtrl,
@@ -9100,13 +9122,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       borderSide: const BorderSide(
                                                           color:
                                                               Color(0xFFFB8C00))),
-                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                                       const SizedBox(width: 10),
                                       Expanded(
                                           child: TextField(
                                               style: const TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w500),
                                               controller: maCtrl,
@@ -9132,7 +9154,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       borderSide: const BorderSide(
                                                           color:
                                                               Color(0xFFFB8C00))),
-                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2)))))
+                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2)))))
                                     ]),
                                   ])),
 
@@ -9217,7 +9239,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                                       .min,
                                                               children: [
                                                                 const CircularProgressIndicator(
-                                                                    color: const Color(
+                                                                    color: Color(
                                                                         0xFFF2EDE4)),
                                                                 const SizedBox(
                                                                     height: 12),
@@ -9249,8 +9271,9 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       fuelEconomy: fe,
                                                       originPlaceId: oPid,
                                                       destPlaceId: dPid);
-                                              if (mounted)
+                                              if (mounted) {
                                                 Navigator.pop(context);
+                                              }
                                               setS(() {
                                                 distCtrl.text =
                                                     res['km'].toString();
@@ -9294,7 +9317,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                             const Duration(
                                                                 seconds: 4),
                                                         content: Text(
-                                                            "$km0 km | Diesel: Rs.${res['diesel']} | ${axles}-axle FASTag Rs.${res['toll']} | $srcLabel")));
+                                                            "$km0 km | Diesel: Rs.${res['diesel']} | $axles-axle FASTag Rs.${res['toll']} | $srcLabel")));
                                               }
                                             },
                                             icon: const Icon(
@@ -9336,7 +9359,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           child: TextField(
                                               style: const TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w500),
                                               controller: distCtrl,
@@ -9364,13 +9387,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                               8),
                                                       borderSide:
                                                           const BorderSide(color: Color(0xFFFB8C00))),
-                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                                       const SizedBox(width: 10),
                                       Expanded(
                                           child: TextField(
                                               style: const TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w500),
                                               controller: feCtrl,
@@ -9397,7 +9420,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       borderRadius:
                                                           BorderRadius.circular(8),
                                                       borderSide: const BorderSide(color: Color(0xFFFB8C00))),
-                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                                     ]),
                                     const SizedBox(height: 8),
                                     Row(children: [
@@ -9405,7 +9428,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           child: TextField(
                                               style: const TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w500),
                                               controller: dslCtrl,
@@ -9431,13 +9454,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                       borderSide: const BorderSide(
                                                           color:
                                                               Color(0xFFFB8C00))),
-                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2))))),
+                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2))))),
                                       const SizedBox(width: 10),
                                       Expanded(
                                           child: TextField(
                                               style: const TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 14,
                                                   fontWeight: FontWeight.w500),
                                               controller: tolCtrl,
@@ -9463,12 +9486,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                           const BorderSide(
                                                               color: Color(
                                                                   0xFF3D5A47))),
-                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: const Color(0xFFFB8C00), width: 2)))))
+                                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFFB8C00), width: 2)))))
                                     ]),
                                     const SizedBox(height: 8),
                                     TextField(
                                         style: const TextStyle(
-                                            color: const Color(0xFF000000),
+                                            color: Color(0xFF000000),
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500),
                                         controller: drvCtrl,
@@ -9494,13 +9517,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                     BorderRadius.circular(8),
                                                 borderSide: const BorderSide(
                                                     color:
-                                                        const Color(0xFFFB8C00),
+                                                        Color(0xFFFB8C00),
                                                     width: 2)))),
                                   ])),
                         const SizedBox(height: 12),
                         TextField(
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                             controller: notCtrl,
@@ -9520,7 +9543,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         width: 2)))),
                         const SizedBox(height: 22),
                         SizedBox(
@@ -9566,9 +9589,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     : vCtrl.text;
                                 if (own == VehicleOwnership.self) {
                                   dsl = double.tryParse(dslCtrl.text) ?? 0;
-                                  if (dsl == 0 && dist > 0 && fe > 0)
+                                  if (dsl == 0 && dist > 0 && fe > 0) {
                                     dsl = (dist / fe) *
                                         AppConfig.defaultDieselPrice;
+                                  }
                                   tol = double.tryParse(tolCtrl.text) ?? 0;
                                   drv = double.tryParse(drvCtrl.text) ?? 0;
                                   los = double.tryParse(losCtrl.text) ?? 0;
@@ -9660,7 +9684,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               },
                               child: const Text("Save Dispatch Ledger",
                                   style: TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 17,
                                       fontWeight: FontWeight.bold)),
                             )),
@@ -9679,7 +9703,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF000000))),
+                  color: Color(0xFF000000))),
           ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFF8E1),
@@ -9687,10 +9711,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(10))),
               onPressed: _addVehicle,
               icon: const Icon(Icons.add,
-                  color: const Color(0xFF000000), size: 16),
+                  color: Color(0xFF000000), size: 16),
               label: const Text("Add Vehicle",
                   style:
-                      TextStyle(color: const Color(0xFF000000), fontSize: 12)))
+                      TextStyle(color: Color(0xFF000000), fontSize: 12)))
         ]),
         const SizedBox(height: 20),
         ...fleet.map((a) => Container(
@@ -9710,15 +9734,15 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     leading: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: const BoxDecoration(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             shape: BoxShape.circle),
                         child: const Icon(Icons.local_shipping,
-                            color: const Color(0xFF000000), size: 22)),
+                            color: Color(0xFF000000), size: 22)),
                     title: Text(a.number,
                         style: const TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             letterSpacing: 0.5)),
                     subtitle: Wrap(spacing: 4, runSpacing: 4, children: [
                       _chip(Icons.directions_car_outlined, a.type,
@@ -9782,7 +9806,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                       const Text("Compliance Vault",
                                           style: TextStyle(
                                               fontWeight: FontWeight.w900,
-                                              color: const Color(0xFF000000),
+                                              color: Color(0xFF000000),
                                               fontSize: 13)),
                                       Text(
                                           "${a.docs.where((d) => d.isUploaded).length}/${a.docs.length} uploaded",
@@ -9882,7 +9906,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                       const Text("Battery Records",
                                           style: TextStyle(
                                               fontWeight: FontWeight.w900,
-                                              color: const Color(0xFF000000),
+                                              color: Color(0xFF000000),
                                               fontSize: 13)),
                                       TextButton.icon(
                                           icon: const Icon(Icons.add, size: 14),
@@ -9964,15 +9988,15 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                           10)),
                                               side: const BorderSide(
                                                   color:
-                                                      const Color(0xFF000000))),
+                                                      Color(0xFF000000))),
                                           onPressed: () => _editAsset(a),
                                           icon: const Icon(Icons.build,
                                               size: 16,
-                                              color: const Color(0xFF000000)),
+                                              color: Color(0xFF000000)),
                                           label: const Text("Edit Tyres",
                                               style: TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 12)))),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -9986,11 +10010,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                           onPressed: () => _sendVehicleDocs(a),
                                           icon: const Icon(Icons.send,
                                               size: 14,
-                                              color: const Color(0xFF000000)),
+                                              color: Color(0xFF000000)),
                                           label: const Text("Send Docs Bundle",
                                               style: TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontSize: 12)))),
                                 ]),
                               ]))
@@ -10030,7 +10054,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 const SizedBox(height: 12),
                 TextField(
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
                     controller: dateCtrl,
@@ -10041,11 +10065,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -10059,7 +10083,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
               ]),
               actions: [
                 TextButton(
@@ -10079,7 +10103,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               "âœ… $docName uploaded${dateCtrl.text.isNotEmpty ? ' â€” Expiry: ${dateCtrl.text}' : ''}!")));
                     },
                     child: const Text("Confirm",
-                        style: TextStyle(color: const Color(0xFF000000)))),
+                        style: TextStyle(color: Color(0xFF000000)))),
               ],
             ));
   }
@@ -10112,7 +10136,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
         if (res != null && res.files.isNotEmpty) {
           pickedPath = res.files.single.path;
           pickedName = res.files.single.name;
-          pickedMime = pickedName?.endsWith('.pdf') == true
+          pickedMime = pickedName.endsWith('.pdf') == true
               ? 'application/pdf'
               : 'image/jpeg';
         }
@@ -10128,7 +10152,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: const Color(0xFF000000))),
+                      strokeWidth: 2, color: Color(0xFF000000))),
               SizedBox(width: 12),
               Text("Reading document...")
             ]),
@@ -10136,7 +10160,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 8)));
       }
-      extracted = await FirebaseService.extractDocumentText(pickedPath!);
+      extracted = await FirebaseService.extractDocumentText(pickedPath);
       if (mounted) ScaffoldMessenger.of(context).hideCurrentSnackBar();
     }
 
@@ -10257,7 +10281,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         // Expiry date (always)
                         TextField(
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                             controller: dateCtrl,
@@ -10269,11 +10293,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 filled: true,
                                 fillColor: const Color(0xFFFFF8E1),
                                 labelStyle: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500),
                                 floatingLabelStyle: const TextStyle(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     fontWeight: FontWeight.w800,
                                     fontSize: 12),
                                 border: OutlineInputBorder(
@@ -10287,14 +10311,14 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         width: 2)))),
                         // RC-specific fields
                         if (isRC) ...[
                           const SizedBox(height: 10),
                           TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: regCtrl,
@@ -10307,11 +10331,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10325,12 +10349,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))),
                           const SizedBox(height: 10),
                           TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: engineCtrl,
@@ -10342,11 +10366,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10360,12 +10384,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))),
                           const SizedBox(height: 10),
                           TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: chassisCtrl,
@@ -10376,11 +10400,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10394,12 +10418,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))),
                           const SizedBox(height: 10),
                           TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: ownerCtrl,
@@ -10411,11 +10435,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10429,7 +10453,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))),
                         ],
                         // Insurance-specific fields
@@ -10437,7 +10461,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           const SizedBox(height: 10),
                           TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: insurerCtrl,
@@ -10449,11 +10473,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10467,13 +10491,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))),
                         ],
                         const SizedBox(height: 10),
                         TextField(
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                             controller: remarksCtrl,
@@ -10483,11 +10507,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 filled: true,
                                 fillColor: const Color(0xFFFFF8E1),
                                 labelStyle: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500),
                                 floatingLabelStyle: const TextStyle(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     fontWeight: FontWeight.w800,
                                     fontSize: 12),
                                 border: OutlineInputBorder(
@@ -10501,7 +10525,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         width: 2)))),
                       ]))),
               actions: [
@@ -10516,10 +10540,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 18, vertical: 10)),
                     icon: const Icon(Icons.save,
-                        color: const Color(0xFF000000), size: 16),
+                        color: Color(0xFF000000), size: 16),
                     label: const Text("Save",
                         style: TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontWeight: FontWeight.bold)),
                     onPressed: () {
                       setState(() {
@@ -10527,19 +10551,23 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         doc.expiryDate =
                             dateCtrl.text.isEmpty ? "Valid" : dateCtrl.text;
                         if (pickedPath != null) {
-                          doc.filePath = pickedPath!;
+                          doc.filePath = pickedPath;
                           doc.mimeType = pickedMime;
                         }
-                        if (pickedName != null) doc.fileData = pickedName!;
-                        if (engineCtrl.text.isNotEmpty)
+                        if (pickedName != null) doc.fileData = pickedName;
+                        if (engineCtrl.text.isNotEmpty) {
                           doc.engineNo = engineCtrl.text;
-                        if (chassisCtrl.text.isNotEmpty)
+                        }
+                        if (chassisCtrl.text.isNotEmpty) {
                           doc.chassisNo = chassisCtrl.text;
+                        }
                         if (regCtrl.text.isNotEmpty) doc.regNo = regCtrl.text;
-                        if (insurerCtrl.text.isNotEmpty)
+                        if (insurerCtrl.text.isNotEmpty) {
                           doc.insurer = insurerCtrl.text;
-                        if (ownerCtrl.text.isNotEmpty)
+                        }
+                        if (ownerCtrl.text.isNotEmpty) {
                           doc.ownerName = ownerCtrl.text;
+                        }
                         doc.remarks = remarksCtrl.text;
                       });
                       _save();
@@ -10618,10 +10646,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               } catch (_) {}
                             },
                             icon: const Icon(Icons.share,
-                                color: const Color(0xFF000000), size: 16),
+                                color: Color(0xFF000000), size: 16),
                             label: const Text("Share / Open",
                                 style:
-                                    TextStyle(color: const Color(0xFF000000)))),
+                                    TextStyle(color: Color(0xFF000000)))),
                       ])),
                 // Show extracted fields if any
                 if (doc.engineNo.isNotEmpty ||
@@ -10640,7 +10668,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             const Text("Extracted Info",
                                 style: TextStyle(
                                     fontWeight: FontWeight.w800,
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 12)),
                             const SizedBox(height: 6),
                             if (doc.engineNo.isNotEmpty)
@@ -10673,7 +10701,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF000000)))),
+                    color: Color(0xFF000000)))),
       ]));
 
   void _viewDriverDoc(DriverDoc doc) {
@@ -10734,10 +10762,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               } catch (_) {}
                             },
                             icon: const Icon(Icons.share,
-                                color: const Color(0xFF000000), size: 16),
+                                color: Color(0xFF000000), size: 16),
                             label: const Text("Share / Open",
                                 style:
-                                    TextStyle(color: const Color(0xFF000000)))),
+                                    TextStyle(color: Color(0xFF000000)))),
                       ])),
                 if (doc.docNumber.isNotEmpty || doc.expiryDate.isNotEmpty)
                   Container(
@@ -10782,7 +10810,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       Expanded(
                           child: TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: makeCtrl,
@@ -10791,11 +10819,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10809,13 +10837,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2))))),
                       const SizedBox(width: 10),
                       Expanded(
                           child: TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: modelCtrl,
@@ -10824,11 +10852,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10842,13 +10870,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))))
                     ]),
                     const SizedBox(height: 10),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: serialCtrl,
@@ -10857,11 +10885,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -10875,12 +10903,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 10),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: billCtrl,
@@ -10889,11 +10917,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -10907,14 +10935,14 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 10),
                     Row(children: [
                       Expanded(
                           child: TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: purchCtrl,
@@ -10923,11 +10951,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10941,13 +10969,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2))))),
                       const SizedBox(width: 10),
                       Expanded(
                           child: TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: warrantExpCtrl,
@@ -10956,11 +10984,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -10974,7 +11002,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))))
                     ]),
                     const SizedBox(height: 10),
@@ -11022,7 +11050,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   content: Text("âœ… Battery record added!")));
                         },
                         child: const Text("Save",
-                            style: TextStyle(color: const Color(0xFF000000))))
+                            style: TextStyle(color: Color(0xFF000000))))
                   ],
                 )));
   }
@@ -11184,9 +11212,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
       await Printing.sharePdf(
           bytes: await pdf.save(), filename: 'VehicleDocs_${a.number}.pdf');
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -11256,7 +11285,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
                 title: const Row(children: [
-                  Icon(Icons.local_shipping, color: const Color(0xFF000000)),
+                  Icon(Icons.local_shipping, color: Color(0xFF000000)),
                   SizedBox(width: 8),
                   Text("Add New Vehicle",
                       style: TextStyle(fontWeight: FontWeight.w800))
@@ -11268,7 +11297,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         children: [
                       TextField(
                           style: const TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontSize: 14,
                               fontWeight: FontWeight.w500),
                           controller: numCtrl,
@@ -11281,11 +11310,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               filled: true,
                               fillColor: const Color(0xFFFFF8E1),
                               labelStyle: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500),
                               floatingLabelStyle: const TextStyle(
-                                  color: const Color(0xFFFB8C00),
+                                  color: Color(0xFFFB8C00),
                                   fontWeight: FontWeight.w800,
                                   fontSize: 12),
                               border: OutlineInputBorder(
@@ -11299,26 +11328,26 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       width: 2)))),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                           style: const TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontSize: 14,
                               fontWeight: FontWeight.w500),
-                          value: vType,
+                          initialValue: vType,
                           decoration: InputDecoration(
                               labelText: "Vehicle Type",
                               prefixIcon: const Icon(Icons.category, size: 18),
                               filled: true,
                               fillColor: const Color(0xFFFFF8E1),
                               labelStyle: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500),
                               floatingLabelStyle: const TextStyle(
-                                  color: const Color(0xFFFB8C00),
+                                  color: Color(0xFFFB8C00),
                                   fontWeight: FontWeight.w800,
                                   fontSize: 12),
                               border: OutlineInputBorder(
@@ -11332,7 +11361,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       width: 2))),
                           items: [
                             "SS Tanker",
@@ -11357,7 +11386,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       const SizedBox(height: 12),
                       TextField(
                           style: const TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontSize: 14,
                               fontWeight: FontWeight.w500),
                           controller: payCtrl,
@@ -11368,11 +11397,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               filled: true,
                               fillColor: const Color(0xFFFFF8E1),
                               labelStyle: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500),
                               floatingLabelStyle: const TextStyle(
-                                  color: const Color(0xFFFB8C00),
+                                  color: Color(0xFFFB8C00),
                                   fontWeight: FontWeight.w800,
                                   fontSize: 12),
                               border: OutlineInputBorder(
@@ -11386,14 +11415,14 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       width: 2)))),
                       const SizedBox(height: 12),
                       Row(children: [
                         Expanded(
                             child: TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: tyCtrl,
@@ -11406,11 +11435,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     filled: true,
                                     fillColor: const Color(0xFFFFF8E1),
                                     labelStyle: const TextStyle(
-                                        color: const Color(0xFF000000),
+                                        color: Color(0xFF000000),
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500),
                                     floatingLabelStyle: const TextStyle(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         fontWeight: FontWeight.w800,
                                         fontSize: 12),
                                     border: OutlineInputBorder(
@@ -11424,7 +11453,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: const BorderSide(
-                                            color: const Color(0xFFFB8C00),
+                                            color: Color(0xFFFB8C00),
                                             width: 2))))),
                         const SizedBox(width: 10),
                         Expanded(
@@ -11434,7 +11463,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 readOnly: true,
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w800,
-                                    color: const Color(0xFF000000)),
+                                    color: Color(0xFF000000)),
                                 decoration: InputDecoration(
                                     labelText: "Axles (auto)",
                                     prefixIcon: const Icon(Icons.linear_scale,
@@ -11442,11 +11471,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     filled: true,
                                     fillColor: const Color(0xFFFFF8E1),
                                     labelStyle: const TextStyle(
-                                        color: const Color(0xFF000000),
+                                        color: Color(0xFF000000),
                                         fontSize: 13,
                                         fontWeight: FontWeight.w500),
                                     floatingLabelStyle: const TextStyle(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         fontWeight: FontWeight.w800,
                                         fontSize: 12),
                                     border: OutlineInputBorder(
@@ -11460,7 +11489,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: const BorderSide(
-                                            color: const Color(0xFFFB8C00),
+                                            color: Color(0xFFFB8C00),
                                             width: 2))))),
                       ]),
                       const SizedBox(height: 8),
@@ -11493,10 +11522,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12))),
                       icon: const Icon(Icons.save,
-                          color: const Color(0xFF000000), size: 16),
+                          color: Color(0xFF000000), size: 16),
                       label: const Text("Add Vehicle",
                           style: TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.bold)),
                       onPressed: () {
                         if (numCtrl.text.trim().isEmpty) {
@@ -11571,14 +11600,15 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           backgroundColor: Colors.indigo),
                       onPressed: () {
                         setState(() {
-                          for (int i = 0; i < asset.tyreCount; i++)
+                          for (int i = 0; i < asset.tyreCount; i++) {
                             asset.tyreSerials[i] = cs[i].text;
+                          }
                         });
                         _save();
                         Navigator.pop(ctx);
                       },
                       child: const Text("Save",
-                          style: TextStyle(color: const Color(0xFF000000))))
+                          style: TextStyle(color: Color(0xFF000000))))
                 ]));
   }
 
@@ -11590,7 +11620,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
               style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF000000))),
+                  color: Color(0xFF000000))),
           ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFF8E1),
@@ -11598,10 +11628,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(10))),
               onPressed: _addDriver,
               icon: const Icon(Icons.person_add,
-                  color: const Color(0xFF000000), size: 16),
+                  color: Color(0xFF000000), size: 16),
               label: const Text("Add Driver",
                   style:
-                      TextStyle(color: const Color(0xFF000000), fontSize: 12)))
+                      TextStyle(color: Color(0xFF000000), fontSize: 12)))
         ]),
         const SizedBox(height: 20),
         if (drivers.isEmpty)
@@ -11638,7 +11668,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         style: const TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 18,
-                            color: const Color(0xFF000000))),
+                            color: Color(0xFF000000))),
                     if (d.isVerified)
                       const Positioned(
                           bottom: 0,
@@ -11717,7 +11747,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               style: TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 13,
-                                  color: const Color(0xFF000000))),
+                                  color: Color(0xFF000000))),
                           const SizedBox(height: 10),
                           ...d.documents.map((doc) => Padding(
                               padding: const EdgeInsets.only(bottom: 8),
@@ -11820,10 +11850,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     },
                                     icon: const Icon(Icons.receipt_long,
                                         size: 15,
-                                        color: const Color(0xFF000000)),
+                                        color: Color(0xFF000000)),
                                     label: const Text("Driver Ledger",
                                         style: TextStyle(
-                                            color: const Color(0xFF000000),
+                                            color: Color(0xFF000000),
                                             fontSize: 12)))),
                           ]),
                         ]))
@@ -11859,7 +11889,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
         if (res != null && res.files.isNotEmpty) {
           pickedFile = res.files.single.name;
           pickedPath = res.files.single.path;
-          pickedMime = pickedFile?.endsWith('.pdf') == true
+          pickedMime = pickedFile.endsWith('.pdf') == true
               ? 'application/pdf'
               : 'image/jpeg';
         }
@@ -11876,23 +11906,25 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(
-                    strokeWidth: 2, color: const Color(0xFF000000))),
+                    strokeWidth: 2, color: Color(0xFF000000))),
             SizedBox(width: 12),
             Text("Reading document details...")
           ]),
           backgroundColor: Colors.indigo,
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 6)));
-      ocrData = await FirebaseService.extractDocumentText(pickedPath!);
+      ocrData = await FirebaseService.extractDocumentText(pickedPath);
       if (mounted) ScaffoldMessenger.of(context).hideCurrentSnackBar();
     }
     if (!mounted) return;
     // Pre-fill from OCR
     String ocrDocNum = '';
-    if (doc.type == 'aadhaar' && ocrData['aadhaarNo'] != null)
+    if (doc.type == 'aadhaar' && ocrData['aadhaarNo'] != null) {
       ocrDocNum = ocrData['aadhaarNo']!;
-    if (doc.type == 'dl' && ocrData['dlNo'] != null)
+    }
+    if (doc.type == 'dl' && ocrData['dlNo'] != null) {
       ocrDocNum = ocrData['dlNo']!;
+    }
     final numCtrl = TextEditingController(
         text: ocrDocNum.isNotEmpty ? ocrDocNum : doc.docNumber);
     final expCtrl = TextEditingController(text: ocrData['expiryDate'] ?? '');
@@ -11936,7 +11968,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     color: Colors.green, size: 18),
                                 const SizedBox(width: 8),
                                 Flexible(
-                                    child: Text(pickedFile!,
+                                    child: Text(pickedFile,
                                         style: const TextStyle(
                                             color: Colors.green,
                                             fontWeight: FontWeight.w700,
@@ -11956,7 +11988,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                       color: Colors.orange, fontSize: 12))),
                         TextField(
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                             controller: numCtrl,
@@ -11976,11 +12008,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 filled: true,
                                 fillColor: const Color(0xFFFFF8E1),
                                 labelStyle: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500),
                                 floatingLabelStyle: const TextStyle(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     fontWeight: FontWeight.w800,
                                     fontSize: 12),
                                 border: OutlineInputBorder(
@@ -11994,13 +12026,13 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        color: const Color(0xFFFB8C00),
+                                        color: Color(0xFFFB8C00),
                                         width: 2)))),
                         if (doc.type != 'photo') ...[
                           const SizedBox(height: 10),
                           TextField(
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500),
                               controller: expCtrl,
@@ -12012,11 +12044,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   filled: true,
                                   fillColor: const Color(0xFFFFF8E1),
                                   labelStyle: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500),
                                   floatingLabelStyle: const TextStyle(
-                                      color: const Color(0xFFFB8C00),
+                                      color: Color(0xFFFB8C00),
                                       fontWeight: FontWeight.w800,
                                       fontSize: 12),
                                   border: OutlineInputBorder(
@@ -12030,7 +12062,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: const BorderSide(
-                                          color: const Color(0xFFFB8C00),
+                                          color: Color(0xFFFB8C00),
                                           width: 2)))),
                         ],
                       ]),
@@ -12044,10 +12076,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10))),
                         icon: const Icon(Icons.check,
-                            color: const Color(0xFF000000), size: 16),
+                            color: Color(0xFF000000), size: 16),
                         label: const Text("Save",
                             style: TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontWeight: FontWeight.bold)),
                         onPressed: () {
                           setState(() {
@@ -12055,20 +12087,23 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             doc.docNumber = numCtrl.text;
                             doc.uploadDate =
                                 "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}";
-                            if (expCtrl.text.isNotEmpty)
+                            if (expCtrl.text.isNotEmpty) {
                               doc.expiryDate = expCtrl.text;
+                            }
                             if (pickedFile != null) {
-                              doc.fileName = pickedFile!;
+                              doc.fileName = pickedFile;
                             }
                             if (pickedPath != null) {
-                              doc.filePath = pickedPath!;
+                              doc.filePath = pickedPath;
                               doc.mimeType = pickedMime;
                             }
                             if (doc.type == 'aadhaar' &&
-                                numCtrl.text.isNotEmpty)
+                                numCtrl.text.isNotEmpty) {
                               driver.aadharNum = numCtrl.text;
-                            if (doc.type == 'dl' && numCtrl.text.isNotEmpty)
+                            }
+                            if (doc.type == 'dl' && numCtrl.text.isNotEmpty) {
                               driver.dlNum = numCtrl.text;
+                            }
                           });
                           _save();
                           Navigator.pop(c);
@@ -12108,7 +12143,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
-                        color: const Color(0xFF000000))),
+                        color: Color(0xFF000000))),
                 const SizedBox(height: 18),
                 Center(
                     child: Stack(children: [
@@ -12146,12 +12181,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               radius: 16,
                               backgroundColor: const Color(0xFFFFF8E1),
                               child: const Icon(Icons.camera_alt,
-                                  size: 16, color: const Color(0xFF000000))))),
+                                  size: 16, color: Color(0xFF000000))))),
                 ])),
                 const SizedBox(height: 18),
                 TextField(
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
                     controller: nm,
@@ -12161,11 +12196,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -12179,11 +12214,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
                 const SizedBox(height: 12),
                 TextField(
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
                     controller: ph,
@@ -12194,11 +12229,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -12212,11 +12247,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
                 const SizedBox(height: 12),
                 TextField(
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
                     controller: sl,
@@ -12227,11 +12262,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -12245,11 +12280,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
                 const SizedBox(height: 12),
                 TextField(
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
                     controller: aa,
@@ -12262,11 +12297,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -12280,11 +12315,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
                 const SizedBox(height: 12),
                 TextField(
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w500),
                     controller: dl,
@@ -12294,11 +12329,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -12312,7 +12347,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
                 const SizedBox(height: 12),
                 // Aadhaar + DL quick upload row
                 StatefulBuilder(builder: (ctx, setDoc) {
@@ -12325,7 +12360,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: const Color(0xFF000000))),
+                                color: Color(0xFF000000))),
                         const SizedBox(height: 8),
                         Row(children: [
                           Expanded(
@@ -12524,7 +12559,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                         },
                         child: const Text("Save Driver",
                             style: TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold)))),
                 const SizedBox(height: 24),
@@ -12549,10 +12584,10 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                   appBar: AppBar(
                       backgroundColor: const Color(0xFFFFF8E1),
                       iconTheme:
-                          const IconThemeData(color: const Color(0xFF000000)),
+                          const IconThemeData(color: Color(0xFF000000)),
                       title: const Text("Company Profile",
                           style: TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.w900))),
                   body: SingleChildScrollView(
                       padding: const EdgeInsets.all(20),
@@ -12588,7 +12623,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                 "${subscription.tierName} Plan",
                                                 style: const TextStyle(
                                                     color:
-                                                        const Color(0xFF000000),
+                                                        Color(0xFF000000),
                                                     fontWeight: FontWeight.w900,
                                                     fontSize: 18)),
                                             Text(
@@ -12615,11 +12650,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w900,
-                                    color: const Color(0xFF000000))),
+                                    color: Color(0xFF000000))),
                             const SizedBox(height: 14),
                             TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: cn,
@@ -12630,7 +12665,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             const SizedBox(height: 12),
                             TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: cg,
@@ -12641,7 +12676,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             const SizedBox(height: 12),
                             TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: cp,
@@ -12652,7 +12687,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             const SizedBox(height: 12),
                             TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: ce,
@@ -12663,7 +12698,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             const SizedBox(height: 12),
                             TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: ca,
@@ -12677,11 +12712,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w900,
-                                    color: const Color(0xFF000000))),
+                                    color: Color(0xFF000000))),
                             const SizedBox(height: 12),
                             TextField(
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500),
                                 controller: cb,
@@ -12694,7 +12729,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               Expanded(
                                   child: TextField(
                                       style: const TextStyle(
-                                          color: const Color(0xFF000000),
+                                          color: Color(0xFF000000),
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500),
                                       controller: cac,
@@ -12705,7 +12740,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                               Expanded(
                                   child: TextField(
                                       style: const TextStyle(
-                                          color: const Color(0xFF000000),
+                                          color: Color(0xFF000000),
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500),
                                       controller: ci,
@@ -12743,7 +12778,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     },
                                     child: const Text("Save Details",
                                         style: TextStyle(
-                                            color: const Color(0xFFFFF8E1),
+                                            color: Color(0xFFFFF8E1),
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold)))),
                             const SizedBox(height: 20),
@@ -12759,25 +12794,25 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                 BorderRadius.circular(20)),
                                         title: const Row(children: [
                                           Icon(Icons.logout_rounded,
-                                              color: const Color(0xFFE53E3E)),
+                                              color: Color(0xFFE53E3E)),
                                           SizedBox(width: 10),
                                           Text("Sign Out",
                                               style: TextStyle(
                                                   color:
-                                                      const Color(0xFF000000),
+                                                      Color(0xFF000000),
                                                   fontWeight: FontWeight.w900))
                                         ]),
                                         content: const Text(
                                             "You will be signed out and need to login again.",
                                             style: TextStyle(
                                                 color:
-                                                    const Color(0xFF000000))),
+                                                    Color(0xFF000000))),
                                         actions: [
                                           TextButton(
                                               onPressed: () => Navigator.pop(c),
                                               child: const Text("Cancel",
                                                   style: TextStyle(
-                                                      color: const Color(
+                                                      color: Color(
                                                           0xFF8FBC8F)))),
                                           GestureDetector(
                                             onTap: () async {
@@ -12811,7 +12846,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                                             10)),
                                                 child: const Text("Sign Out",
                                                     style: TextStyle(
-                                                        color: const Color(
+                                                        color: Color(
                                                             0xFFF2EDE4),
                                                         fontWeight:
                                                             FontWeight.w800))),
@@ -12834,12 +12869,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.logout_rounded,
-                                          color: const Color(0xFFE53E3E),
+                                          color: Color(0xFFE53E3E),
                                           size: 18),
                                       SizedBox(width: 8),
                                       Text("Sign Out",
                                           style: TextStyle(
-                                              color: const Color(0xFFE53E3E),
+                                              color: Color(0xFFE53E3E),
                                               fontWeight: FontWeight.w800,
                                               fontSize: 15))
                                     ]),
@@ -12858,11 +12893,12 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading)
+    if (_loading) {
       return const Scaffold(
           body: Center(
               child:
-                  CircularProgressIndicator(color: const Color(0xFF000000))));
+                  CircularProgressIndicator(color: Color(0xFF000000))));
+    }
     return Scaffold(
         appBar: AppBar(
             elevation: 0,
@@ -12883,7 +12919,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           color: const Color(0xFFFB8C00),
                           borderRadius: BorderRadius.circular(8)),
                       child: const Icon(Icons.local_shipping_rounded,
-                          color: const Color(0xFF000000), size: 16)),
+                          color: Color(0xFF000000), size: 16)),
                   const SizedBox(width: 8),
                   Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -12891,7 +12927,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                       children: [
                         const Text("ROUTE MASTER",
                             style: TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.5,
                                 fontSize: 14,
@@ -12912,7 +12948,7 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                           color: const Color(0xFF000000).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10)),
                       child: const Icon(Icons.person_outline_rounded,
-                          color: const Color(0xFF000000), size: 20)),
+                          color: Color(0xFF000000), size: 20)),
                   onPressed: _openProfile),
               const SizedBox(width: 4),
             ]),
@@ -12996,7 +13032,7 @@ class FactorySearchField extends StatefulWidget {
 class _FactorySearchFieldState extends State<FactorySearchField> {
   late TextEditingController _ctrl;
   List<Map<String, String>> _sugg = [];
-  bool _show = false;
+  final bool _show = false;
   bool _selecting = false;
   Timer? _deb;
 
@@ -13212,7 +13248,7 @@ class _FactorySearchFieldState extends State<FactorySearchField> {
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 13,
-                                      color: const Color(0xFF000000)),
+                                      color: Color(0xFF000000)),
                                   overflow: TextOverflow.ellipsis),
                               subtitle: (s['location'] ?? '').isNotEmpty
                                   ? Text(s['location']!,
@@ -13301,8 +13337,9 @@ class _CitySearchFieldState extends State<CitySearchField> {
   void initState() {
     super.initState();
     _ctrl = widget.controller ?? TextEditingController();
-    if (widget.initialValue.isNotEmpty && _ctrl.text.isEmpty)
+    if (widget.initialValue.isNotEmpty && _ctrl.text.isEmpty) {
       _ctrl.text = widget.initialValue;
+    }
     // NO addListener â€” use onChanged in TextField so only user-typing triggers it
     _focus.addListener(() {
       if (!_focus.hasFocus) _removeOverlay();
@@ -13399,7 +13436,7 @@ class _CitySearchFieldState extends State<CitySearchField> {
                               style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 13,
-                                  color: const Color(0xFF000000))),
+                                  color: Color(0xFF000000))),
                           subtitle: (s['state'] ?? '').isNotEmpty
                               ? Text('${s['state']}, India',
                                   style: const TextStyle(
@@ -14116,9 +14153,10 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           bytes: await pdf.save(),
           filename: 'LR_${l.id}_${l.partyName.replaceAll(' ', '_')}.pdf');
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("PDF Error: $e"), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -14480,9 +14518,10 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
           bytes: await pdf.save(),
           filename: 'Invoice_INV-${l.id}_${l.partyName}.pdf');
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("PDF Error: $e"), backgroundColor: Colors.red));
+      }
     }
   }
 
@@ -14512,20 +14551,20 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     const SizedBox(height: 18),
                     DropdownButtonFormField<String>(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
-                        value: type,
+                        initialValue: type,
                         decoration: InputDecoration(
                             labelText: "Entry Type",
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -14539,7 +14578,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00), width: 2))),
+                                    color: Color(0xFFFB8C00), width: 2))),
                         items: [
                           "Payment Received",
                           "Penalty Deducted",
@@ -14554,7 +14593,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     const SizedBox(height: 12),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: amtCtrl,
@@ -14565,11 +14604,11 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -14583,12 +14622,12 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 12),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: noteCtrl,
@@ -14597,11 +14636,11 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -14615,7 +14654,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 18),
                     SizedBox(
@@ -14687,7 +14726,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                             },
                             child: const Text("Save Entry",
                                 style: TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold)))),
                     const SizedBox(height: 24),
@@ -14710,16 +14749,16 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: AppBar(
           backgroundColor: const Color(0xFFFFF8E1),
-          iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+          iconTheme: const IconThemeData(color: Color(0xFF000000)),
           title: Text(l.partyName,
               style: const TextStyle(
-                  color: const Color(0xFF000000),
+                  color: Color(0xFF000000),
                   fontWeight: FontWeight.w900,
                   fontSize: 16)),
           actions: [
             IconButton(
                 icon: const Icon(Icons.add_circle_outline,
-                    color: const Color(0xFF000000)),
+                    color: Color(0xFF000000)),
                 tooltip: "Add Entry",
                 onPressed: _addEntry)
           ]),
@@ -14739,7 +14778,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                         style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
-                            color: const Color(0xFF000000))),
+                            color: Color(0xFF000000))),
                     backgroundColor: isSelf ? Colors.blueAccent : Colors.purple,
                     padding: const EdgeInsets.symmetric(horizontal: 4))
               ]),
@@ -14748,7 +14787,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      color: const Color(0xFF000000))),
+                      color: Color(0xFF000000))),
               Text(l.vehicleNo,
                   style: const TextStyle(
                       fontSize: 14,
@@ -14944,7 +14983,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
-                        color: const Color(0xFF000000))),
+                        color: Color(0xFF000000))),
                 Text("â‚¹${l.tripProfit.toStringAsFixed(0)}",
                     style: const TextStyle(
                         fontSize: 22,
@@ -15007,7 +15046,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
-                  strokeWidth: 2, color: const Color(0xFF000000))),
+                  strokeWidth: 2, color: Color(0xFF000000))),
           SizedBox(width: 12),
           Text("Preparing documents...")
         ])));
@@ -15166,8 +15205,9 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
 
   String _aging() {
     final m = <String, double>{};
-    for (final l in widget.ledgers)
+    for (final l in widget.ledgers) {
       m[l.partyName] = (m[l.partyName] ?? 0) + l.partyPending;
+    }
     final sb = StringBuffer();
     sb.writeln("Party Aging Report â€” ${widget.userProfile.companyName}");
     sb.writeln(
@@ -15186,10 +15226,10 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
             backgroundColor: const Color(0xFFFFF8E1),
-            iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+            iconTheme: const IconThemeData(color: Color(0xFF000000)),
             title: const Text("Tally / CA Export",
                 style: TextStyle(
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     fontWeight: FontWeight.w900))),
         body: Column(children: [
           Container(
@@ -15202,7 +15242,7 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                         style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
-                            color: const Color(0xFF000000))),
+                            color: Color(0xFF000000))),
                     const SizedBox(height: 10),
                     ...[
                       "CA Audit CSV",
@@ -15237,10 +15277,10 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                                     ? _tallyXml()
                                     : _aging()),
                         icon: const Icon(Icons.auto_awesome,
-                            color: const Color(0xFF000000), size: 16),
+                            color: Color(0xFF000000), size: 16),
                         label: Text("Generate $_fmt",
                             style: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontWeight: FontWeight.bold))),
                     if (_data != null) ...[
                       const SizedBox(height: 10),
@@ -15249,7 +15289,7 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                             child: OutlinedButton.icon(
                                 style: OutlinedButton.styleFrom(
                                     side: const BorderSide(
-                                        color: const Color(0xFF000000)),
+                                        color: Color(0xFF000000)),
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
                                             BorderRadius.circular(12)),
@@ -15266,10 +15306,10 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                                           behavior: SnackBarBehavior.floating));
                                 },
                                 icon: const Icon(Icons.copy,
-                                    color: const Color(0xFF000000), size: 16),
+                                    color: Color(0xFF000000), size: 16),
                                 label: const Text("Copy",
                                     style: TextStyle(
-                                        color: const Color(0xFF000000),
+                                        color: Color(0xFF000000),
                                         fontWeight: FontWeight.bold)))),
                         const SizedBox(width: 10),
                         Expanded(
@@ -15295,10 +15335,10 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                                           "Route Master ERP Export â€” ${widget.userProfile.companyName}");
                                 },
                                 icon: const Icon(Icons.share,
-                                    color: const Color(0xFF000000), size: 16),
+                                    color: Color(0xFF000000), size: 16),
                                 label: const Text("Share File",
                                     style: TextStyle(
-                                        color: const Color(0xFF000000),
+                                        color: Color(0xFF000000),
                                         fontWeight: FontWeight.bold)))),
                       ]),
                     ],
@@ -15316,7 +15356,7 @@ class _TallyExportScreenState extends State<TallyExportScreen> {
                             style: const TextStyle(
                                 fontFamily: 'monospace',
                                 fontSize: 11,
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 height: 1.5))))),
         ]),
       );
@@ -15398,21 +15438,21 @@ class _BankImportScreenState extends State<BankImportScreen> {
   @override
   Widget build(BuildContext context) {
     final matched =
-        _entries.where((e) => (e as BankEntry).isMatched == true).length;
+        _entries.where((e) => (e).isMatched == true).length;
     return Scaffold(
       appBar: AppBar(
           backgroundColor: const Color(0xFFFFF8E1),
-          iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+          iconTheme: const IconThemeData(color: Color(0xFF000000)),
           title: const Text("Bank Statement Import",
               style: TextStyle(
-                  color: const Color(0xFF000000), fontWeight: FontWeight.w900)),
+                  color: Color(0xFF000000), fontWeight: FontWeight.w900)),
           actions: [
             if (matched > 0)
               TextButton(
                   onPressed: _applyAll,
                   child: Text("Apply $matched",
                       style: const TextStyle(
-                          color: const Color(0xFFFB8C00),
+                          color: Color(0xFFFB8C00),
                           fontWeight: FontWeight.bold)))
           ]),
       body: Column(children: [
@@ -15425,7 +15465,7 @@ class _BankImportScreenState extends State<BankImportScreen> {
                   style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
-                      color: const Color(0xFF000000))),
+                      color: Color(0xFF000000))),
               const SizedBox(height: 4),
               const Text("Format: Date, Narration, Ref No, Debit, Credit",
                   style: TextStyle(color: Colors.grey, fontSize: 12)),
@@ -15453,10 +15493,10 @@ class _BankImportScreenState extends State<BankImportScreen> {
                           vertical: 12, horizontal: 20)),
                   onPressed: () => _parse(_ctrl.text),
                   icon: const Icon(Icons.auto_fix_high,
-                      color: const Color(0xFF000000)),
+                      color: Color(0xFF000000)),
                   label: const Text("Parse & Auto-Match",
                       style: TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontWeight: FontWeight.bold))),
             ])),
         if (_parsed)
@@ -15709,12 +15749,12 @@ class _DriverTrackingModeState extends State<DriverTrackingMode> {
         backgroundColor: const Color(0xFFFFF8E1),
         appBar: AppBar(
             backgroundColor: const Color(0xFFFFF8E1),
-            iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+            iconTheme: const IconThemeData(color: Color(0xFF000000)),
             title:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text("Driver Mode",
                   style: TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontWeight: FontWeight.w900,
                       fontSize: 16)),
               Text(widget.vehicleNo,
@@ -15805,7 +15845,7 @@ class _DriverTrackingModeState extends State<DriverTrackingMode> {
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFF000000))),
+                          color: Color(0xFF000000))),
                 )),
             const SizedBox(height: 12),
             const Text("Fleet owner sees your live position on their screen",
@@ -15897,8 +15937,9 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
       widget.ledgers.where((l) => l.partyPending <= 0).length;
   List<MapEntry<String, double>> get _topParties {
     final m = <String, double>{};
-    for (final l in widget.ledgers)
+    for (final l in widget.ledgers) {
       m[l.partyName] = (m[l.partyName] ?? 0) + l.freightBilled;
+    }
     return (m.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
         .take(5)
         .toList();
@@ -15906,8 +15947,9 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
 
   List<MapEntry<String, double>> get _topVehicles {
     final m = <String, double>{};
-    for (final l in widget.ledgers)
+    for (final l in widget.ledgers) {
       m[l.vehicleNo] = (m[l.vehicleNo] ?? 0) + l.freightBilled;
+    }
     return (m.entries.toList()..sort((a, b) => b.value.compareTo(a.value)))
         .take(5)
         .toList();
@@ -15917,13 +15959,13 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
   static const _bg = Color(0xFFFFF8E1);
   static const _card = Color(0xFFFFF8E1);
   static const _card2 = Color(0xFFFFF8E1);
-  static const _border = const Color(0xFFFB8C00);
-  static const _accent = const Color(0xFFFB8C00);
-  static const _green = const Color(0xFFFB8C00);
-  static const _red = const Color(0xFFE53E3E);
-  static const _amber = const Color(0xFFFB8C00);
-  static const _purple = const Color(0xFF5C3D2E);
-  static const _cyan = const Color(0xFFFB8C00);
+  static const _border = Color(0xFFFB8C00);
+  static const _accent = Color(0xFFFB8C00);
+  static const _green = Color(0xFFFB8C00);
+  static const _red = Color(0xFFE53E3E);
+  static const _amber = Color(0xFFFB8C00);
+  static const _purple = Color(0xFF5C3D2E);
+  static const _cyan = Color(0xFFFB8C00);
   static const _pink = Color(0xFFE85D3D);
 
   Widget _sectionTitle(String t, {IconData? icon, Color? color}) => Padding(
@@ -15992,14 +16034,14 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
               const SizedBox(height: 12),
               Text(value,
                   style: const TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                       height: 1)),
               const SizedBox(height: 3),
               Text(label,
                   style: const TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontSize: 11,
                       fontWeight: FontWeight.w500)),
               if (sub != null) ...[
@@ -16022,7 +16064,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
           Expanded(
               child: Text(label,
                   style: const TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontSize: 12,
                       fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis)),
@@ -16080,7 +16122,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
             ],
             Text(label,
                 style: const TextStyle(
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     fontWeight: FontWeight.w700,
                     fontSize: 12)),
           ]),
@@ -16098,7 +16140,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
         decoration: BoxDecoration(
           gradient: const LinearGradient(colors: [
             Color(0xFFFFF8E1),
-            const Color(0xFFFB8C00),
+            Color(0xFFFB8C00),
             Color(0xFF0EA5E9)
           ], begin: Alignment.topLeft, end: Alignment.bottomRight),
           borderRadius: BorderRadius.circular(20),
@@ -16123,7 +16165,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
           const SizedBox(height: 12),
           Text(_f(_rev),
               style: const TextStyle(
-                  color: const Color(0xFFFFF8E1),
+                  color: Color(0xFFFFF8E1),
                   fontSize: 38,
                   fontWeight: FontWeight.w900,
                   height: 1,
@@ -16250,7 +16292,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         children: [
                       Text(e.value.key,
                           style: const TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.w700,
                               fontSize: 13),
                           overflow: TextOverflow.ellipsis),
@@ -16312,7 +16354,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
           const SizedBox(height: 2),
           Text(l,
               style:
-                  const TextStyle(color: const Color(0xFF000000), fontSize: 9))
+                  const TextStyle(color: Color(0xFF000000), fontSize: 9))
         ]),
       ));
 
@@ -16340,13 +16382,13 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                             children: [
                           Text(l.partyName,
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontWeight: FontWeight.w800,
                                   fontSize: 14),
                               overflow: TextOverflow.ellipsis),
                           Text("${l.vehicleNo} â€¢ ${l.date}",
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontSize: 11)),
                         ])),
                     Column(
@@ -16354,14 +16396,14 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         children: [
                           Text(_f(l.partyPending),
                               style: const TextStyle(
-                                  color: const Color(0xFFE53E3E),
+                                  color: Color(0xFFE53E3E),
                                   fontWeight: FontWeight.w900,
                                   fontSize: 15)),
                           if (l.paymentDueDate != null)
                             Text(
                                 "Due: ${l.paymentDueDate!.day}/${l.paymentDueDate!.month}",
                                 style: const TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 10)),
                         ]),
                   ]),
@@ -16376,7 +16418,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     padding: EdgeInsets.symmetric(vertical: 12),
                     child: Center(
                         child: Text("No applications",
-                            style: TextStyle(color: const Color(0xFF000000)))))
+                            style: TextStyle(color: Color(0xFF000000)))))
               ]
             : _kredx.map((app) => Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -16394,7 +16436,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                               Expanded(
                                   child: Text(app.partyName,
                                       style: const TextStyle(
-                                          color: const Color(0xFF000000),
+                                          color: Color(0xFF000000),
                                           fontWeight: FontWeight.w900,
                                           fontSize: 15),
                                       overflow: TextOverflow.ellipsis)),
@@ -16404,7 +16446,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         Text(
                             "Applied: ${app.appliedDate} â€¢ ${app.tenureDays} days",
                             style: const TextStyle(
-                                color: const Color(0xFF000000), fontSize: 11)),
+                                color: Color(0xFF000000), fontSize: 11)),
                         const SizedBox(height: 10),
                         Row(children: [
                           _infoChip("Invoice", _f(app.invoiceAmount), _cyan),
@@ -16476,7 +16518,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                   child: const Center(
                                       child: Text("Reject",
                                           style: TextStyle(
-                                              color: const Color(0xFFE53E3E),
+                                              color: Color(0xFFE53E3E),
                                               fontWeight: FontWeight.w700,
                                               fontSize: 12)))),
                             )),
@@ -16512,7 +16554,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                   child: const Center(
                                       child: Text("Approve âœ“",
                                           style: TextStyle(
-                                              color: const Color(0xFF000000),
+                                              color: Color(0xFF000000),
                                               fontWeight: FontWeight.w800,
                                               fontSize: 12)))),
                             )),
@@ -16545,7 +16587,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                 child: const Center(
                                     child: Text("Disburse Funds ðŸ’¸",
                                         style: TextStyle(
-                                            color: const Color(0xFF000000),
+                                            color: Color(0xFF000000),
                                             fontWeight: FontWeight.w800,
                                             fontSize: 13)))),
                           ),
@@ -16573,16 +16615,16 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                             children: [
                           Text(l.partyName,
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontWeight: FontWeight.w700),
                               overflow: TextOverflow.ellipsis),
                           Text(l.date,
                               style: const TextStyle(
-                                  color: const Color(0xFF000000), fontSize: 11))
+                                  color: Color(0xFF000000), fontSize: 11))
                         ])),
                     Text(_f(l.freightBilled),
                         style: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w900)),
                   ]),
             )),
@@ -16600,7 +16642,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                   color: c, fontWeight: FontWeight.w900, fontSize: 12)),
           Text(l,
               style:
-                  const TextStyle(color: const Color(0xFF000000), fontSize: 9))
+                  const TextStyle(color: Color(0xFF000000), fontSize: 9))
         ]),
       );
 
@@ -16653,7 +16695,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                       color: _accent.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(10)),
                   child: const Icon(Icons.local_shipping_rounded,
-                      color: const Color(0xFFFB8C00), size: 20)),
+                      color: Color(0xFFFB8C00), size: 20)),
               const SizedBox(width: 12),
               Expanded(
                   child: Column(
@@ -16661,13 +16703,13 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                       children: [
                     Text(a.number,
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontWeight: FontWeight.w900,
                             fontSize: 15,
                             letterSpacing: 0.5)),
                     Text("${a.type} â€¢ ${a.axleCount} axle â€¢ ${a.payload}",
                         style: const TextStyle(
-                            color: const Color(0xFF000000), fontSize: 11)),
+                            color: Color(0xFF000000), fontSize: 11)),
                   ])),
               _statusBadge(
                   isCompliant ? "COMPLIANT" : "$uploadedDocs/$totalDocs DOCS",
@@ -16686,7 +16728,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
               const SizedBox(height: 10),
               const Text("MISSING DOCUMENTS",
                   style: TextStyle(
-                      color: const Color(0xFFFB8C00),
+                      color: Color(0xFFFB8C00),
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5)),
@@ -16706,7 +16748,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                     Border.all(color: _red.withOpacity(0.3))),
                             child: Text(d.name,
                                 style: const TextStyle(
-                                    color: const Color(0xFFE53E3E),
+                                    color: Color(0xFFE53E3E),
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600)),
                           ))
@@ -16770,7 +16812,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
           decoration: InputDecoration(
               labelText: "Search driversâ€¦",
               prefixIcon: const Icon(Icons.search,
-                  color: const Color(0xFF000000), size: 18),
+                  color: Color(0xFF000000), size: 18),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFF1E2D4A))),
@@ -16778,7 +16820,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
               fillColor: _card2,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
-          style: const TextStyle(color: const Color(0xFF000000)),
+          style: const TextStyle(color: Color(0xFF000000)),
           onChanged: (v) => setState(() => _searchQuery = v),
         ),
       ),
@@ -16826,18 +16868,18 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                 Flexible(
                                     child: Text(d.name,
                                         style: const TextStyle(
-                                            color: const Color(0xFF000000),
+                                            color: Color(0xFF000000),
                                             fontWeight: FontWeight.w900,
                                             fontSize: 15),
                                         overflow: TextOverflow.ellipsis)),
                                 const SizedBox(width: 6),
                                 if (d.isVerified)
                                   const Icon(Icons.verified_rounded,
-                                      color: const Color(0xFFFB8C00), size: 14)
+                                      color: Color(0xFFFB8C00), size: 14)
                               ]),
                               Text(d.phone,
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 12)),
                             ])),
                         Column(
@@ -16850,7 +16892,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                       fontSize: 15)),
                               Text(d.balance >= 0 ? "To Pay" : "Owes",
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontSize: 9)),
                             ]),
                       ]),
@@ -16863,7 +16905,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         const SizedBox(width: 8),
                         if (d.monthlySalary > 0)
                           _statChip(Icons.payments_rounded,
-                              _f(d.monthlySalary) + "/mo", _purple),
+                              "${_f(d.monthlySalary)}/mo", _purple),
                       ]),
                       if (d.aadharNum.isNotEmpty || d.dlNum.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -16924,7 +16966,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                 Text(
                     "${action == "salary" ? "Pay Salary" : action == "advance" ? "Give Advance" : "Add Penalty"} â€” ${d.name}",
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontWeight: FontWeight.w800,
                         fontSize: 15))
               ]),
@@ -16933,7 +16975,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     controller: ctrl,
                     keyboardType: TextInputType.number,
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 20,
                         fontWeight: FontWeight.w800),
                     decoration: InputDecoration(
@@ -16943,11 +16985,11 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -16961,21 +17003,21 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
                 const SizedBox(height: 10),
                 TextField(
                     controller: noteCtrl,
-                    style: const TextStyle(color: const Color(0xFF000000)),
+                    style: const TextStyle(color: Color(0xFF000000)),
                     decoration: InputDecoration(
                         labelText: "Notes",
                         filled: true,
                         fillColor: const Color(0xFFFFF8E1),
                         labelStyle: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                         floatingLabelStyle: const TextStyle(
-                            color: const Color(0xFFFB8C00),
+                            color: Color(0xFFFB8C00),
                             fontWeight: FontWeight.w800,
                             fontSize: 12),
                         border: OutlineInputBorder(
@@ -16989,13 +17031,13 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: const Color(0xFFFB8C00), width: 2)))),
+                                color: Color(0xFFFB8C00), width: 2)))),
               ]),
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(c),
                     child: const Text("Cancel",
-                        style: TextStyle(color: const Color(0xFF000000)))),
+                        style: TextStyle(color: Color(0xFF000000)))),
                 GestureDetector(
                   onTap: () {
                     final amt = double.tryParse(ctrl.text) ?? 0;
@@ -17036,7 +17078,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                           borderRadius: BorderRadius.circular(10)),
                       child: const Text("Confirm",
                           style: TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.w800))),
                 ),
               ],
@@ -17065,11 +17107,11 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               const Icon(Icons.workspace_premium_rounded,
-                  color: const Color(0xFF000000), size: 20),
+                  color: Color(0xFF000000), size: 20),
               const SizedBox(width: 8),
               Text(widget.subscription.tierName,
                   style: const TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontWeight: FontWeight.w900,
                       fontSize: 22,
                       letterSpacing: 1))
@@ -17209,12 +17251,12 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                   children: [
                 Text(label,
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 10,
                         fontWeight: FontWeight.w600)),
                 Text(val,
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 13,
                         fontWeight: FontWeight.w700),
                     overflow: TextOverflow.ellipsis),
@@ -17274,9 +17316,10 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
             "All ${widget.ledgers.length} trips", _green, () {
           final sb = StringBuffer(
               "ID,Date,Party,Vehicle,Route,Freight,Received,Pending,Profit\n");
-          for (final l in widget.ledgers)
+          for (final l in widget.ledgers) {
             sb.writeln(
                 '${l.id},${l.date},"${l.partyName}",${l.vehicleNo},"${l.route}",${l.freightBilled},${l.paymentReceived},${l.partyPending},${l.tripProfit}');
+          }
           Clipboard.setData(ClipboardData(text: sb.toString()));
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               backgroundColor: Colors.green,
@@ -17287,9 +17330,10 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
         _actionTile(Icons.people_rounded, "Export Driver Ledger",
             "${widget.drivers.length} drivers", _purple, () {
           final sb = StringBuffer("Name,Phone,Balance,Salary\n");
-          for (final d in widget.drivers)
+          for (final d in widget.drivers) {
             sb.writeln(
                 '"${d.name}",${d.phone},${d.balance},${d.monthlySalary}');
+          }
           Clipboard.setData(ClipboardData(text: sb.toString()));
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               backgroundColor: Colors.purple,
@@ -17309,22 +17353,22 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         borderRadius: BorderRadius.circular(20)),
                     title: const Row(children: [
                       Icon(Icons.delete_forever,
-                          color: const Color(0xFFE53E3E)),
+                          color: Color(0xFFE53E3E)),
                       SizedBox(width: 8),
                       Text("Factory Reset",
                           style: TextStyle(
-                              color: const Color(0xFF000000),
+                              color: Color(0xFF000000),
                               fontWeight: FontWeight.w900))
                     ]),
                     content: const Text(
                         "This will permanently erase ALL data â€” trips, fleet, drivers, settings. This CANNOT be undone.",
-                        style: TextStyle(color: const Color(0xFF000000))),
+                        style: TextStyle(color: Color(0xFF000000))),
                     actions: [
                       TextButton(
                           onPressed: () => Navigator.pop(c),
                           child: const Text("Cancel",
                               style:
-                                  TextStyle(color: const Color(0xFF000000)))),
+                                  TextStyle(color: Color(0xFF000000)))),
                       GestureDetector(
                           onTap: () {
                             Navigator.pop(c);
@@ -17339,7 +17383,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                                   borderRadius: BorderRadius.circular(10)),
                               child: const Text("WIPE ALL DATA",
                                   style: TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontWeight: FontWeight.w800)))),
                     ],
                   )),
@@ -17351,7 +17395,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                 border: Border.all(color: _red.withOpacity(0.3))),
             child: const Row(children: [
               Icon(Icons.delete_forever_rounded,
-                  color: const Color(0xFFE53E3E), size: 22),
+                  color: Color(0xFFE53E3E), size: 22),
               SizedBox(width: 14),
               Expanded(
                   child: Column(
@@ -17359,14 +17403,14 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                       children: [
                     Text("Factory Reset",
                         style: TextStyle(
-                            color: const Color(0xFFE53E3E),
+                            color: Color(0xFFE53E3E),
                             fontWeight: FontWeight.w800,
                             fontSize: 14)),
                     Text("Erase all app data permanently",
                         style: TextStyle(
-                            color: const Color(0xFF000000), fontSize: 12))
+                            color: Color(0xFF000000), fontSize: 12))
                   ])),
-              Icon(Icons.chevron_right, color: const Color(0xFF000000))
+              Icon(Icons.chevron_right, color: Color(0xFF000000))
             ]),
           ),
         ),
@@ -17389,12 +17433,12 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     children: [
                   Text(label,
                       style: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontSize: 11,
                           fontWeight: FontWeight.w600)),
                   Text(val,
                       style: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontSize: 13,
                           fontWeight: FontWeight.w700),
                       overflow: TextOverflow.ellipsis)
@@ -17421,12 +17465,12 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                   children: [
                 Text(name,
                     style: const TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontWeight: FontWeight.w700,
                         fontSize: 13)),
                 Text(desc,
                     style: const TextStyle(
-                        color: const Color(0xFF000000), fontSize: 10))
+                        color: Color(0xFF000000), fontSize: 10))
               ])),
         ]),
       );
@@ -17455,12 +17499,12 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                     children: [
                   Text(title,
                       style: const TextStyle(
-                          color: const Color(0xFF000000),
+                          color: Color(0xFF000000),
                           fontWeight: FontWeight.w700,
                           fontSize: 13)),
                   Text(sub,
                       style: const TextStyle(
-                          color: const Color(0xFF000000), fontSize: 11))
+                          color: Color(0xFF000000), fontSize: 11))
                 ])),
             Icon(Icons.arrow_forward_ios, color: c, size: 13)
           ]),
@@ -17501,15 +17545,15 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
             decoration: const BoxDecoration(color: Color(0xFFFBF7F0))),
-        iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+        iconTheme: const IconThemeData(color: Color(0xFF000000)),
         elevation: 0,
         title: Row(children: [
           Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                   gradient: const LinearGradient(colors: [
-                    const Color(0xFF5C3D2E),
-                    const Color(0xFFFB8C00)
+                    Color(0xFF5C3D2E),
+                    Color(0xFFFB8C00)
                   ]),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
@@ -17518,7 +17562,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                         blurRadius: 10)
                   ]),
               child: const Icon(Icons.admin_panel_settings_rounded,
-                  color: const Color(0xFF000000), size: 18)),
+                  color: Color(0xFF000000), size: 18)),
           const SizedBox(width: 10),
           Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -17526,7 +17570,7 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
               children: [
                 const Text("MASTER ADMIN",
                     style: TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontWeight: FontWeight.w900,
                         fontSize: 15,
                         letterSpacing: 0.5)),
@@ -17547,11 +17591,11 @@ class _AdvancedAdminScreenState extends State<AdvancedAdminScreen>
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.red.withOpacity(0.3))),
               child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.circle, color: const Color(0xFFE53E3E), size: 8),
+                Icon(Icons.circle, color: Color(0xFFE53E3E), size: 8),
                 SizedBox(width: 4),
                 Text("ADMIN",
                     style: TextStyle(
-                        color: const Color(0xFFE53E3E),
+                        color: Color(0xFFE53E3E),
                         fontSize: 9,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1))
@@ -17738,7 +17782,7 @@ class _KredXScreenState extends State<KredXScreen>
                         const Text("Request Amount",
                             style: TextStyle(
                                 fontWeight: FontWeight.w800,
-                                color: const Color(0xFF000000))),
+                                color: Color(0xFF000000))),
                         Slider(
                             value: req,
                             min: 5000,
@@ -17821,7 +17865,7 @@ class _KredXScreenState extends State<KredXScreen>
                                 },
                                 child: const Text("Submit to KredX",
                                     style: TextStyle(
-                                        color: const Color(0xFF000000),
+                                        color: Color(0xFF000000),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16)))),
                         const SizedBox(height: 24),
@@ -17833,7 +17877,7 @@ class _KredXScreenState extends State<KredXScreen>
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
             backgroundColor: const Color(0xFFFFF8E1),
-            iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+            iconTheme: const IconThemeData(color: Color(0xFF000000)),
             title: Row(children: [
               Container(
                   padding: const EdgeInsets.all(6),
@@ -17841,11 +17885,11 @@ class _KredXScreenState extends State<KredXScreen>
                       color: Colors.amber[700],
                       borderRadius: BorderRadius.circular(8)),
                   child: const Icon(Icons.account_balance,
-                      color: const Color(0xFF000000), size: 18)),
+                      color: Color(0xFF000000), size: 18)),
               const SizedBox(width: 10),
               const Text("KredX Invoice Finance",
                   style: TextStyle(
-                      color: const Color(0xFF000000),
+                      color: Color(0xFF000000),
                       fontWeight: FontWeight.w900,
                       fontSize: 16))
             ]),
@@ -17966,11 +18010,11 @@ class _KredXScreenState extends State<KredXScreen>
                                                   BorderRadius.circular(10))),
                                       onPressed: () => _apply(l),
                                       icon: const Icon(Icons.account_balance,
-                                          color: const Color(0xFF000000),
+                                          color: Color(0xFF000000),
                                           size: 16),
                                       label: const Text("Apply for Advance",
                                           style: TextStyle(
-                                              color: const Color(0xFF000000),
+                                              color: Color(0xFF000000),
                                               fontWeight: FontWeight.bold))))
                             ]));
                   }),
@@ -18136,7 +18180,7 @@ class SubscriptionScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8)),
                           child: const Text("BEST VALUE",
                               style: TextStyle(
-                                  color: const Color(0xFFFFF8E1),
+                                  color: Color(0xFFFFF8E1),
                                   fontSize: 9,
                                   fontWeight: FontWeight.w900)))
                     ],
@@ -18160,7 +18204,7 @@ class SubscriptionScreen extends StatelessWidget {
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     Text(price,
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontWeight: FontWeight.w900,
                             fontSize: 26)),
                     const SizedBox(width: 4),
@@ -18202,7 +18246,7 @@ class SubscriptionScreen extends StatelessWidget {
                                       ? "Downgrade to Free"
                                       : "Upgrade to $name",
                                   style: const TextStyle(
-                                      color: const Color(0xFF000000),
+                                      color: Color(0xFF000000),
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14)))),
                     if (isCur)
@@ -18228,10 +18272,10 @@ class SubscriptionScreen extends StatelessWidget {
         appBar: AppBar(
             backgroundColor: const Color(0xFFFFF8E1),
             elevation: 0,
-            iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+            iconTheme: const IconThemeData(color: Color(0xFF000000)),
             title: const Text("Choose Your Plan",
                 style: TextStyle(
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     fontWeight: FontWeight.w900))),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -18266,7 +18310,7 @@ class SubscriptionScreen extends StatelessWidget {
                           Text(
                               "${current.tripsUsedThisMonth}/${current.tier == SubscriptionTier.free ? '10' : 'âˆž'}",
                               style: const TextStyle(
-                                  color: const Color(0xFF000000),
+                                  color: Color(0xFF000000),
                                   fontWeight: FontWeight.w900,
                                   fontSize: 18)),
                           const Text("trips this month",
@@ -18355,13 +18399,13 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   Timer? _timer;
   // Live location from Firebase / simulated
   double? _lat, _lng;
-  bool _driverSharing = false; // true when driver has enabled sharing
+  final bool _driverSharing = false; // true when driver has enabled sharing
   late AnimationController _pulse;
   late TabController _tabs;
   late int _eta;
   String _status = "On Route";
   final List<String> _log = [];
-  bool _loadingEmergency = false;
+  final bool _loadingEmergency = false;
 
   // Hardcoded emergency data (Google Places API fallback)
   final List<Map<String, dynamic>> _hospitals = [
@@ -18489,8 +18533,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
           }
         } else {
           _status = "Arrived";
-          if (!_log.first.contains("Arrived"))
+          if (!_log.first.contains("Arrived")) {
             _log.insert(0, "${_t()} â€” Vehicle arrived at destination");
+          }
         }
       });
     });
@@ -18561,11 +18606,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                       borderRadius: BorderRadius.circular(10)),
                   child: Row(children: [
                     const Icon(Icons.phone,
-                        color: const Color(0xFF000000), size: 14),
+                        color: Color(0xFF000000), size: 14),
                     const SizedBox(width: 4),
                     Text(item['phone'] as String,
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontWeight: FontWeight.bold,
                             fontSize: 12))
                   ])),
@@ -18577,10 +18622,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xFFFFF8E1),
-          iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+          iconTheme: const IconThemeData(color: Color(0xFF000000)),
           title: Text(widget.vehicleNo,
               style: const TextStyle(
-                  color: const Color(0xFF000000), fontWeight: FontWeight.w900)),
+                  color: Color(0xFF000000), fontWeight: FontWeight.w900)),
           actions: [
             Container(
                 margin: const EdgeInsets.only(right: 14),
@@ -18704,7 +18749,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                                 spreadRadius: 2)
                                           ]),
                                       child: const Icon(Icons.local_shipping,
-                                          color: const Color(0xFFFFF8E1),
+                                          color: Color(0xFFFFF8E1),
                                           size: 14))))),
                       Positioned(
                           top: 14,
@@ -18719,7 +18764,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                   border: Border.all(color: Color(0x121A3A2A))),
                               child: Text(widget.route,
                                   style: const TextStyle(
-                                      color: const Color(0xFFFFF8E1),
+                                      color: Color(0xFFFFF8E1),
                                       fontWeight: FontWeight.w700,
                                       fontSize: 11),
                                   textAlign: TextAlign.center,
@@ -18747,7 +18792,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                               fontWeight: FontWeight.bold)),
                                       Text(_fmtEta(_eta),
                                           style: const TextStyle(
-                                              color: const Color(0xFFFFF8E1),
+                                              color: Color(0xFFFFF8E1),
                                               fontWeight: FontWeight.w900,
                                               fontSize: 18))
                                     ]),
@@ -18785,7 +18830,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                               ? _status.substring(0, 14)
                                               : _status,
                                           style: const TextStyle(
-                                              color: const Color(0xFFFB8C00),
+                                              color: Color(0xFFFB8C00),
                                               fontWeight: FontWeight.w800,
                                               fontSize: 11))
                                     ]),
@@ -18809,7 +18854,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                           style: TextStyle(
                                               fontWeight: FontWeight.w800,
                                               fontSize: 14,
-                                              color: const Color(0xFF000000))),
+                                              color: Color(0xFF000000))),
                                       Text(
                                           "${(_prog * 100).toStringAsFixed(1)}%",
                                           style: const TextStyle(
@@ -18840,7 +18885,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                         child: Text(_log[i],
                                             style: const TextStyle(
                                                 fontSize: 12,
-                                                color: const Color(0xFF000000),
+                                                color: Color(0xFF000000),
                                                 fontWeight: FontWeight.w500)))
                                   ])))),
                     ]))),
@@ -18912,7 +18957,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                     color: Colors.red, borderRadius: BorderRadius.circular(14)),
                 child: Row(children: [
                   const Icon(Icons.sos,
-                      color: const Color(0xFF000000), size: 28),
+                      color: Color(0xFF000000), size: 28),
                   const SizedBox(width: 12),
                   Expanded(
                       child: Column(
@@ -18920,7 +18965,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                           children: [
                         const Text("EMERGENCY SOS",
                             style: TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontWeight: FontWeight.w900,
                                 fontSize: 16)),
                         const Text("Tap to call National Highway Helpline",
@@ -18979,7 +19024,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
             child: Column(children: [
               Text(number,
                   style: const TextStyle(
-                      color: const Color(0xFFFFF8E1),
+                      color: Color(0xFFFFF8E1),
                       fontWeight: FontWeight.w900,
                       fontSize: 16)),
               Text(label,
@@ -18995,10 +19040,12 @@ class _MapGridPainter extends CustomPainter {
     final p = Paint()
       ..color = const Color(0xFFFFF8E1).withOpacity(0.04)
       ..strokeWidth = 1;
-    for (double x = 0; x < size.width; x += 40)
+    for (double x = 0; x < size.width; x += 40) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), p);
-    for (double y = 0; y < size.height; y += 40)
+    }
+    for (double y = 0; y < size.height; y += 40) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), p);
+    }
     final rp = Paint()
       ..color = const Color(0xFFFFF8E1).withOpacity(0.06)
       ..strokeWidth = 6;
@@ -19050,24 +19097,24 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                         style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: const Color(0xFF000000))),
+                            color: Color(0xFF000000))),
                     const SizedBox(height: 20),
                     DropdownButtonFormField<DriverTxType>(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
-                        value: type,
+                        initialValue: type,
                         decoration: InputDecoration(
                             labelText: "Transaction Type",
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -19081,7 +19128,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00), width: 2))),
+                                    color: Color(0xFFFB8C00), width: 2))),
                         items: DriverTxType.values
                             .map((t) => DropdownMenuItem(
                                 value: t,
@@ -19093,7 +19140,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                     const SizedBox(height: 14),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: amtCtrl,
@@ -19104,11 +19151,11 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -19122,12 +19169,12 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 12),
                     TextField(
                         style: const TextStyle(
-                            color: const Color(0xFF000000),
+                            color: Color(0xFF000000),
                             fontSize: 14,
                             fontWeight: FontWeight.w500),
                         controller: noteCtrl,
@@ -19136,11 +19183,11 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                             filled: true,
                             fillColor: const Color(0xFFFFF8E1),
                             labelStyle: const TextStyle(
-                                color: const Color(0xFF000000),
+                                color: Color(0xFF000000),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500),
                             floatingLabelStyle: const TextStyle(
-                                color: const Color(0xFFFB8C00),
+                                color: Color(0xFFFB8C00),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12),
                             border: OutlineInputBorder(
@@ -19154,7 +19201,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                    color: const Color(0xFFFB8C00),
+                                    color: Color(0xFFFB8C00),
                                     width: 2)))),
                     const SizedBox(height: 20),
                     SizedBox(
@@ -19170,7 +19217,9 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                               if (type == DriverTxType.advance ||
                                   type == DriverTxType.penalty ||
                                   type == DriverTxType.fuel ||
-                                  type == DriverTxType.deduction) amt = -amt;
+                                  type == DriverTxType.deduction) {
+                                amt = -amt;
+                              }
                               setState(() {
                                 widget.driver.transactions.insert(
                                     0,
@@ -19187,7 +19236,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                             },
                             child: const Text("Save Entry",
                                 style: TextStyle(
-                                    color: const Color(0xFF000000),
+                                    color: Color(0xFF000000),
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold)))),
                     const SizedBox(height: 20),
@@ -19199,23 +19248,23 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
             backgroundColor: const Color(0xFFFFF8E1),
-            iconTheme: const IconThemeData(color: const Color(0xFF000000)),
+            iconTheme: const IconThemeData(color: Color(0xFF000000)),
             title: Text(widget.driver.name,
                 style: const TextStyle(
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     fontWeight: FontWeight.w900))),
         body: Column(children: [
           Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
               decoration: const BoxDecoration(
-                  color: const Color(0xFF000000),
+                  color: Color(0xFF000000),
                   borderRadius:
                       BorderRadius.vertical(bottom: Radius.circular(32))),
               child: Column(children: [
                 const Text("Outstanding Balance",
                     style: TextStyle(
-                        color: const Color(0xFF000000),
+                        color: Color(0xFF000000),
                         fontSize: 14,
                         fontWeight: FontWeight.w600)),
                 const SizedBox(height: 10),
@@ -19232,7 +19281,7 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
                         ? "Owed to driver"
                         : "Driver owes company",
                     style: const TextStyle(
-                        color: const Color(0xFF000000), fontSize: 13)),
+                        color: Color(0xFF000000), fontSize: 13)),
                 if (widget.driver.monthlySalary > 0) ...[
                   const SizedBox(height: 8),
                   Container(
@@ -19309,10 +19358,10 @@ class _DriverLedgerScreenState extends State<DriverLedgerScreen> {
         ]),
         floatingActionButton: FloatingActionButton.extended(
             backgroundColor: const Color(0xFFFFF8E1),
-            icon: const Icon(Icons.add, color: const Color(0xFF000000)),
+            icon: const Icon(Icons.add, color: Color(0xFF000000)),
             label: const Text("Add Entry",
                 style: TextStyle(
-                    color: const Color(0xFF000000),
+                    color: Color(0xFF000000),
                     fontWeight: FontWeight.bold)),
             onPressed: _addTx),
       );

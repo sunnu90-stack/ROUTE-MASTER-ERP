@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'main.dart'; // Grabs your API Key
+// Grabs your API Key
 
 // ---------------------------------------------------------
 // CAMERA HELPER (Replaces the broken FilePicker)
@@ -196,7 +196,7 @@ class Fleet extends StatelessWidget {
 }
 
 extension on Color {
-  get shade50 => null;
+  Null get shade50 => null;
 }
 
 class AddTruck extends StatefulWidget {

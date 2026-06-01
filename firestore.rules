@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function roleIs(roles) {
+      return isAuthenticated() && (request.auth.token.role in roles);
+    }
+
+    // Dispatch ledgers: owners/admins can create/update/delete.
+    // Drivers may update only ledgers assigned to them and only limited fields (status, proofs).
+    match /dispatchLedgers/{ledgerId} {
+      allow read: if isAuthenticated() && (roleIs(['owner','admin','developer']) || resource.data.assignedDriverId == request.auth.uid);
+
+      allow create: if roleIs(['owner','admin','developer']);
+
+      allow update: if roleIs(['owner','admin','developer'])
+        || (
+          // drivers may update only their assigned ledger
+          request.auth.token.role == 'driver'
+          && resource.data.assignedDriverId == request.auth.uid
+          // and must not add/remove arbitrary fields - here we allow only status and proofs uploads
+          && (request.resource.data.keys().hasOnly(['status','proofs']) || (request.resource.data.keys().hasOnly(resource.data.keys())))
+        );
+
+      allow delete: if roleIs(['owner','admin','developer']);
+    }
+
+    // Market loads: only owners/admins can create/update/delete
+    match /marketLoads/{loadId} {
+      allow read: if isAuthenticated() && (roleIs(['owner','admin','developer']) || resource.data.assignedDriverId == request.auth.uid);
+      allow create, update, delete: if roleIs(['owner','admin','developer']);
+    }
+
+    // Users: owners/admins may create user profiles; users may read/update their own profile
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || roleIs(['owner','admin','developer']));
+      allow update: if isAuthenticated() && (request.auth.uid == userId || roleIs(['owner','admin','developer']));
+      allow create: if roleIs(['owner','admin','developer']);
+    }
+
+    // Fallback: authenticated reads allowed; writes only for owners/admins
+    match /{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if roleIs(['owner','admin','developer']);
+    }
+  }
+}

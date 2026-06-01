@@ -2,7 +2,7 @@ name: liquid_logistics
 description: Route Master ERP - Transport & Logistics Management System
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 5.0.0+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -25,12 +25,13 @@ dependencies:
 
   # File & Media
   image_picker: ^1.0.7
-  file_picker: ^10.3.10
+  file_picker: ^11.0.2
   path_provider: ^2.1.5
 
   # Sharing & Launching
   url_launcher: ^6.3.2
-  share_plus: ^7.2.1
+  share_plus: ^12.0.2
+
   # Charts & Data
   fl_chart: ^1.2.0
   csv: ^8.0.0
@@ -44,6 +45,8 @@ dependencies:
 
   # Google Maps
   google_maps_flutter: ^2.16.0
+  google_generative_ai: ^0.4.7
+  sms_autofill: ^2.2.0
 
 dev_dependencies:
   flutter_test:
