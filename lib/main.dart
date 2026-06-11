@@ -54,6 +54,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart'
     if (dart.library.html) 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:liquid_logistics/erp_features.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:speech_to_text
+import 'package:flutter_localizations
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'theme_provider.dart';
+import 'theme_picker.dart';
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7199,7 +7204,7 @@ void main() async {
     debugPrint(
         'Warning Firebase not configured - using local storage only: $e');
   }
-  runApp(const RouteMasterApp());
+  runApp(const ProviderScope(child: RouteMasterApp()));
 }
 
 class RouteMasterApp extends StatelessWidget {
@@ -21126,7 +21131,11 @@ class _MainShellState extends State<MainShell> with TickerProviderStateMixin {
                             Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Row(children: [
+                            ThemePicker(),
+                                const SizedBox(height: 20),
+                                const Divider(height: 1),
+                                const SizedBox(height: 20),
+                                    const Row(children: [
                                     Icon(Icons.translate_rounded,
                                         color: Color(0xFF0EA5E9), size: 18),
                                     SizedBox(width: 8),
